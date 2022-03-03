@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package auth_proto;
 
-option go_package="auth_proto";
+option go_package="./auth_proto";
 
 message LoginRequest {
   string email = 1;

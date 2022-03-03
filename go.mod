@@ -11,9 +11,11 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/gofiber/fiber/v2 v2.28.0
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/lib/pq v1.10.4
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	google.golang.org/grpc v1.44.0 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )

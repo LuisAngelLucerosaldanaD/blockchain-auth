@@ -1,17 +1,19 @@
 package login
 
 import (
+	"blion-auth/internal/grpc/auth_proto"
 	"blion-auth/internal/logger"
 	"blion-auth/internal/models"
 	"blion-auth/internal/pwd"
 	"blion-auth/pkg/auth/users"
+	"context"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type PortServiceLogin interface {
-	Login(nickname, email, password, realIp string) (string, int, error)
+	Login(context.Context, *auth_proto.LoginRequest) (*auth_proto.Response, error)
 }
 
 type service struct {
@@ -19,11 +21,15 @@ type service struct {
 	TxID string
 }
 
+
+
 func NewLoginService(db *sqlx.DB, txID string) PortServiceLogin {
 	return &service{DB: db, TxID: txID}
 }
-
-func (s *service) Login(nickname, email, password, realIp string) (string, int, error) {
+func (s *service) Login(ctx context.Context, request *auth_proto.LoginRequest) (*auth_proto.Response, error) {
+	panic("implement me")
+}
+func (s *service) Login2(nickname, email, password, realIp string) (string, int, error) {
 	var token string
 	m := NewLogin(nickname, email, password, realIp)
 	if valid, err := m.valid(); !valid {

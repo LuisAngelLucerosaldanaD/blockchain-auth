@@ -23,6 +23,8 @@ type Server struct {
 	SrvUsersWallet users_wallet.PortsServerUsersWallet
 }
 
+
+
 func NewServerAuth(db *sqlx.DB, user *models.User, txID string) *Server {
 	srvLogin := login.NewLoginService(db, txID)
 	repoUserTemp := users_temp.FactoryStorage(db, user, txID)

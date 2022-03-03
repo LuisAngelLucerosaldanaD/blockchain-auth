@@ -1,6 +1,8 @@
 package api
 
 import (
+	"blion-auth/internal/grpc/auth_proto"
+	"blion-auth/api/handlers/login"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
@@ -38,8 +40,7 @@ func (srv *server) Start() {
 	}
 	s := grpc.NewServer()
 
-	//auth_proto.RegisterAuthServicesRolesServer(s, &roles.ServerRoles{})
-
+	auth_proto.RegisterAuthServicesUsersServer(s,&login.HandlerLogin{})
 	err = s.Serve(lis)
 	if err != nil {
 		log.Fatal("Error fatal server", err)

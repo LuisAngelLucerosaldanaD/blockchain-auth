@@ -2,9 +2,7 @@ package login
 
 import (
 	"blion-auth/internal/ciphers"
-	"blion-auth/internal/logger"
 	"blion-auth/internal/msg"
-	"blion-auth/pkg/auth"
 	b64 "encoding/base64"
 	"net/http"
 
@@ -12,7 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type handlerLogin struct {
+type HandlerLogin struct {
 	DB   *sqlx.DB
 	TxID string
 }
@@ -26,7 +24,7 @@ type handlerLogin struct {
 // @Success 202 {object} dataBlockToMine
 // @Router /api/v1/block-to-mine [get]
 // @Authorization Bearer token
-func (h *handlerLogin) Login(c *fiber.Ctx) error {
+/*func (h *handlerLogin) Login(c *fiber.Ctx) error {
 
 	res := responseLogin{Error: true}
 	m := requestLogin{}
@@ -48,9 +46,9 @@ func (h *handlerLogin) Login(c *fiber.Ctx) error {
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
 	return c.Status(http.StatusOK).JSON(res)
-}
+}*/
 
-func (h *handlerLogin) SecretKey(c *fiber.Ctx) error {
+func (h *HandlerLogin) SecretKey(c *fiber.Ctx) error {
 
 	res := responseKey{Error: true}
 	if c.Params("secret") != "027dfc14-d847-4627-9f7f-ecb5d6ef06fa" {
