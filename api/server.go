@@ -2,10 +2,11 @@ package api
 
 import (
 	"fmt"
+	"google.golang.org/grpc"
 	"log"
+	"net"
 
 	"github.com/fatih/color"
-	"github.com/gofiber/fiber/v2"
 )
 
 const (
@@ -20,16 +21,28 @@ Version: %s
 
 type server struct {
 	listening string
-	app       string
-	fb        *fiber.App
 }
 
-func newServer(listening int, app string, fb *fiber.App) *server {
-	return &server{fmt.Sprintf(":%d", listening), app, fb}
+func newServer(listening int) *server {
+	return &server{fmt.Sprintf(":%d", listening)}
 }
 
 func (srv *server) Start() {
 	color.Blue(banner)
-	color.Cyan(fmt.Sprintf(description, srv.app, srv.listening, version, website))
-	log.Fatal(srv.fb.Listen(srv.listening))
+	color.Cyan(fmt.Sprintf(description, "", srv.listening, version, website))
+
+	lis, err := net.Listen("tcp", "0.0.0.0"+srv.listening)
+	if err != nil {
+		fmt.Println(err.Error())
+		log.Fatalf("Error faltal listener %v", err)
+	}
+	s := grpc.NewServer()
+
+	//auth_proto.RegisterAuthServicesRolesServer(s, &roles.ServerRoles{})
+
+	err = s.Serve(lis)
+	if err != nil {
+		log.Fatal("Error fatal server", err)
+	}
+
 }
