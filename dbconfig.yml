@@ -1,0 +1,5 @@
+development:
+  dialect: postgres
+  datasource: host=ecapture-db-cluster-instance-1.cz34n4bxn4bs.us-east-1.rds.amazonaws.com dbname=blion user=ecatch_sa password=3c4ptUr32021* sslmode=disable
+  dir: migrations/postgres
+  table: migrations
