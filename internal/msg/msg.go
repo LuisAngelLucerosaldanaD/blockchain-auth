@@ -9,8 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func GetByCode(code int, db *sqlx.DB, txID string) (int, int, string) {
-	codRes := 0
+func GetByCode(code int, db *sqlx.DB, txID string) (int32, int32, string) {
+	var codRes int32
 	msg := ""
 	c := env.NewConfiguration()
 	srvCFG := cfg.NewServerCfg(db, nil, txID)
@@ -27,6 +27,6 @@ func GetByCode(code int, db *sqlx.DB, txID string) (int, int, string) {
 	default:
 		logger.Error.Println("el sistema no tiene implementado el idioma: ", c.App.Language)
 	}
-	codRes = m.ID
-	return codRes, m.TypeMessage, msg
+	codRes = int32(m.ID)
+	return codRes, int32(m.TypeMessage), msg
 }

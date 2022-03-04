@@ -5,16 +5,16 @@ package auth_proto;
 option go_package="./auth_proto";
 
 message LoginRequest {
-  string email = 1;
-  string nickname = 2;
+  optional string email = 1;
+  optional string nickname = 2;
   string password = 3;
 }
 
 message Response {
   bool error = 1;
-  bytes data = 2;
+  string data = 2;
   int32 code = 3;
-  string type = 4;
+  int32 type = 4;
   string msg = 5;
 }
 

@@ -1,9 +1,10 @@
-package api
+package grpc
 
 import (
+	login2 "blion-auth/api/grpc/handlers/login"
 	"blion-auth/internal/grpc/auth_proto"
-	"blion-auth/api/handlers/login"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -23,10 +24,12 @@ Version: %s
 
 type server struct {
 	listening string
+	DB   *sqlx.DB
+	TxID string
 }
 
-func newServer(listening int) *server {
-	return &server{fmt.Sprintf(":%d", listening)}
+func newServer(listening int, db *sqlx.DB, txID string) *server {
+	return &server{fmt.Sprintf(":%d", listening), db, txID}
 }
 
 func (srv *server) Start() {
@@ -40,7 +43,7 @@ func (srv *server) Start() {
 	}
 	s := grpc.NewServer()
 
-	auth_proto.RegisterAuthServicesUsersServer(s,&login.HandlerLogin{})
+	auth_proto.RegisterAuthServicesUsersServer(s,&login2.HandlerLogin{DB: srv.DB, TxID: srv.TxID})
 	err = s.Serve(lis)
 	if err != nil {
 		log.Fatal("Error fatal server", err)
