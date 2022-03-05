@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package users_proto;
+
+option go_package="./users_proto";
+
+message UserRequest {
+  string Id = 1;
+  string Nickname = 2;
+  string Email = 3;
+  string Password = 4;
+  string ConfirmPassword = 5;
+  string Name = 6;
+  string Lastname = 7;
+  int32 IdType = 8;
+  string IdNumber = 9;
+  string Cellphone = 10;
+  google.protobuf.Timestamp BirthDate = 11;
+}
+
+
+message UserResponse {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message ActivateUserRequest {
+}
+message ActivateUserResponse {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message ValidateEmailRequest {
+}
+message ValidateEmailResponse {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message ValidateNicknameRequest {
+}
+message ValidateNicknameResponse {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message GetUserByIDRequest {
+}
+
+message ValidateIdentityRequest {
+}
+message ValidateIdentityResponse {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message ValidateCertifierRequest {
+}
+message ValidateCertifierResponse {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+service authServicesUsers {
+  rpc CreateUser(UserRequest) returns (UserResponse){}
+  rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse){}
+  rpc ValidateEmail(ValidateEmailRequest) returns (ValidateEmailResponse){}
+  rpc ValidateNickname(ValidateNicknameRequest) returns (ValidateNicknameResponse){}
+  rpc GetUserById(GetUserByIDRequest) returns (UserResponse){}
+  rpc ValidateIdentity(ValidateIdentityRequest) returns (ValidateIdentityResponse){}
+  rpc ValidateCertifier(ValidateCertifierRequest) returns (ValidateCertifierResponse){}
+
+}

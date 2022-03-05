@@ -1,8 +1,10 @@
 package grpc
 
 import (
-	login2 "blion-auth/api/grpc/handlers/login"
+	"blion-auth/api/grpc/handlers/login"
+	"blion-auth/api/grpc/handlers/users"
 	"blion-auth/internal/grpc/auth_proto"
+	"blion-auth/internal/grpc/users_proto"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
@@ -43,7 +45,9 @@ func (srv *server) Start() {
 	}
 	s := grpc.NewServer()
 
-	auth_proto.RegisterAuthServicesUsersServer(s,&login2.HandlerLogin{DB: srv.DB, TxID: srv.TxID})
+	auth_proto.RegisterAuthServicesUsersServer(s,&login.HandlerLogin{DB: srv.DB, TxID: srv.TxID})
+	users_proto.RegisterAuthServicesUsersServer(s,&users.HandlerUsers{DB: srv.DB, TxID: srv.TxID})
+
 	err = s.Serve(lis)
 	if err != nil {
 		log.Fatal("Error fatal server", err)

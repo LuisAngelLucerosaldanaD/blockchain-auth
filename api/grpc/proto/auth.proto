@@ -10,7 +10,23 @@ message LoginRequest {
   string password = 3;
 }
 
-message Response {
+message LoginResponse {
+  bool error = 1;
+  DataMsg data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+message DataMsg{
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message SecretRequest {
+  string secret = 1;
+}
+
+message SecretResponse {
   bool error = 1;
   string data = 2;
   int32 code = 3;
@@ -18,7 +34,7 @@ message Response {
   string msg = 5;
 }
 
-
 service authServicesUsers {
-  rpc Login(LoginRequest) returns (Response){}
+  rpc Login(LoginRequest) returns (LoginResponse){}
+  rpc SecretKey(SecretRequest) returns (SecretResponse){}
 }

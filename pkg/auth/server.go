@@ -9,7 +9,6 @@ import (
 	"blion-auth/pkg/auth/users_wallet"
 	"blion-auth/pkg/auth/wallets"
 	"blion-auth/pkg/auth/wallets_temp"
-
 	"github.com/jmoiron/sqlx"
 )
 

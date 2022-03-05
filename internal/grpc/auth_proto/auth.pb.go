@@ -87,20 +87,20 @@ func (x *LoginRequest) GetPassword() string {
 	return ""
 }
 
-type Response struct {
+type LoginResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Error bool   `protobuf:"varint,1,opt,name=error,proto3" json:"error,omitempty"`
-	Data  string `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Code  int32  `protobuf:"varint,3,opt,name=code,proto3" json:"code,omitempty"`
-	Type  int32  `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`
-	Msg   string `protobuf:"bytes,5,opt,name=msg,proto3" json:"msg,omitempty"`
+	Error bool     `protobuf:"varint,1,opt,name=error,proto3" json:"error,omitempty"`
+	Data  *DataMsg `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Code  int32    `protobuf:"varint,3,opt,name=code,proto3" json:"code,omitempty"`
+	Type  int32    `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`
+	Msg   string   `protobuf:"bytes,5,opt,name=msg,proto3" json:"msg,omitempty"`
 }
 
-func (x *Response) Reset() {
-	*x = Response{}
+func (x *LoginResponse) Reset() {
+	*x = LoginResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_auth_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -108,13 +108,13 @@ func (x *Response) Reset() {
 	}
 }
 
-func (x *Response) String() string {
+func (x *LoginResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Response) ProtoMessage() {}
+func (*LoginResponse) ProtoMessage() {}
 
-func (x *Response) ProtoReflect() protoreflect.Message {
+func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_auth_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -126,40 +126,221 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Response.ProtoReflect.Descriptor instead.
-func (*Response) Descriptor() ([]byte, []int) {
+// Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
+func (*LoginResponse) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Response) GetError() bool {
+func (x *LoginResponse) GetError() bool {
 	if x != nil {
 		return x.Error
 	}
 	return false
 }
 
-func (x *Response) GetData() string {
+func (x *LoginResponse) GetData() *DataMsg {
 	if x != nil {
 		return x.Data
 	}
-	return ""
+	return nil
 }
 
-func (x *Response) GetCode() int32 {
+func (x *LoginResponse) GetCode() int32 {
 	if x != nil {
 		return x.Code
 	}
 	return 0
 }
 
-func (x *Response) GetType() int32 {
+func (x *LoginResponse) GetType() int32 {
 	if x != nil {
 		return x.Type
 	}
 	return 0
 }
 
-func (x *Response) GetMsg() string {
+func (x *LoginResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+type DataMsg struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AccessToken  string `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	RefreshToken string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+}
+
+func (x *DataMsg) Reset() {
+	*x = DataMsg{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_auth_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DataMsg) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DataMsg) ProtoMessage() {}
+
+func (x *DataMsg) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DataMsg.ProtoReflect.Descriptor instead.
+func (*DataMsg) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *DataMsg) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *DataMsg) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
+}
+
+type SecretRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Secret string `protobuf:"bytes,1,opt,name=secret,proto3" json:"secret,omitempty"`
+}
+
+func (x *SecretRequest) Reset() {
+	*x = SecretRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_auth_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SecretRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SecretRequest) ProtoMessage() {}
+
+func (x *SecretRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SecretRequest.ProtoReflect.Descriptor instead.
+func (*SecretRequest) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SecretRequest) GetSecret() string {
+	if x != nil {
+		return x.Secret
+	}
+	return ""
+}
+
+type SecretResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error bool   `protobuf:"varint,1,opt,name=error,proto3" json:"error,omitempty"`
+	Data  string `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Code  int32  `protobuf:"varint,3,opt,name=code,proto3" json:"code,omitempty"`
+	Type  int32  `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`
+	Msg   string `protobuf:"bytes,5,opt,name=msg,proto3" json:"msg,omitempty"`
+}
+
+func (x *SecretResponse) Reset() {
+	*x = SecretResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_auth_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SecretResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SecretResponse) ProtoMessage() {}
+
+func (x *SecretResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SecretResponse.ProtoReflect.Descriptor instead.
+func (*SecretResponse) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SecretResponse) GetError() bool {
+	if x != nil {
+		return x.Error
+	}
+	return false
+}
+
+func (x *SecretResponse) GetData() string {
+	if x != nil {
+		return x.Data
+	}
+	return ""
+}
+
+func (x *SecretResponse) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *SecretResponse) GetType() int32 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+func (x *SecretResponse) GetMsg() string {
 	if x != nil {
 		return x.Msg
 	}
@@ -178,20 +359,42 @@ var file_auth_proto_rawDesc = []byte{
 	0x65, 0x88, 0x01, 0x01, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64,
 	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64,
 	0x42, 0x08, 0x0a, 0x06, 0x5f, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x42, 0x0b, 0x0a, 0x09, 0x5f, 0x6e,
-	0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x6e, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x08, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74,
-	0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x12, 0x0a,
-	0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x63, 0x6f, 0x64,
-	0x65, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52,
-	0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x05, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x03, 0x6d, 0x73, 0x67, 0x32, 0x4e, 0x0a, 0x11, 0x61, 0x75, 0x74, 0x68, 0x53,
-	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x55, 0x73, 0x65, 0x72, 0x73, 0x12, 0x39, 0x0a, 0x05,
-	0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12, 0x18, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x14, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x0e, 0x5a, 0x0c, 0x2e, 0x2f, 0x61, 0x75, 0x74,
-	0x68, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x88, 0x01, 0x0a, 0x0d, 0x4c, 0x6f, 0x67, 0x69,
+	0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72,
+	0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x12,
+	0x27, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e,
+	0x61, 0x75, 0x74, 0x68, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x4d,
+	0x73, 0x67, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x12, 0x0a, 0x04,
+	0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65,
+	0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d,
+	0x73, 0x67, 0x22, 0x51, 0x0a, 0x07, 0x44, 0x61, 0x74, 0x61, 0x4d, 0x73, 0x67, 0x12, 0x21, 0x0a,
+	0x0c, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0b, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x54, 0x6f, 0x6b, 0x65, 0x6e,
+	0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x66, 0x72, 0x65, 0x73, 0x68, 0x5f, 0x74, 0x6f, 0x6b, 0x65,
+	0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x72, 0x65, 0x66, 0x72, 0x65, 0x73, 0x68,
+	0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x27, 0x0a, 0x0d, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x22, 0x74,
+	0x0a, 0x0e, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52,
+	0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f,
+	0x64, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x12,
+	0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x74, 0x79,
+	0x70, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x6d, 0x73, 0x67, 0x32, 0x99, 0x01, 0x0a, 0x11, 0x61, 0x75, 0x74, 0x68, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x73, 0x55, 0x73, 0x65, 0x72, 0x73, 0x12, 0x3e, 0x0a, 0x05, 0x4c, 0x6f,
+	0x67, 0x69, 0x6e, 0x12, 0x18, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e,
+	0x61, 0x75, 0x74, 0x68, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x44, 0x0a, 0x09, 0x53, 0x65,
+	0x63, 0x72, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x12, 0x19, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
+	0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
+	0x42, 0x0e, 0x5a, 0x0c, 0x2e, 0x2f, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -206,19 +409,25 @@ func file_auth_proto_rawDescGZIP() []byte {
 	return file_auth_proto_rawDescData
 }
 
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_auth_proto_goTypes = []interface{}{
-	(*LoginRequest)(nil), // 0: auth_proto.LoginRequest
-	(*Response)(nil),     // 1: auth_proto.Response
+	(*LoginRequest)(nil),   // 0: auth_proto.LoginRequest
+	(*LoginResponse)(nil),  // 1: auth_proto.LoginResponse
+	(*DataMsg)(nil),        // 2: auth_proto.DataMsg
+	(*SecretRequest)(nil),  // 3: auth_proto.SecretRequest
+	(*SecretResponse)(nil), // 4: auth_proto.SecretResponse
 }
 var file_auth_proto_depIdxs = []int32{
-	0, // 0: auth_proto.authServicesUsers.Login:input_type -> auth_proto.LoginRequest
-	1, // 1: auth_proto.authServicesUsers.Login:output_type -> auth_proto.Response
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: auth_proto.LoginResponse.data:type_name -> auth_proto.DataMsg
+	0, // 1: auth_proto.authServicesUsers.Login:input_type -> auth_proto.LoginRequest
+	3, // 2: auth_proto.authServicesUsers.SecretKey:input_type -> auth_proto.SecretRequest
+	1, // 3: auth_proto.authServicesUsers.Login:output_type -> auth_proto.LoginResponse
+	4, // 4: auth_proto.authServicesUsers.SecretKey:output_type -> auth_proto.SecretResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_auth_proto_init() }
@@ -240,7 +449,43 @@ func file_auth_proto_init() {
 			}
 		}
 		file_auth_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Response); i {
+			switch v := v.(*LoginResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_auth_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DataMsg); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_auth_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SecretRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_auth_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SecretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -259,7 +504,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_auth_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -285,7 +530,8 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type AuthServicesUsersClient interface {
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*Response, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	SecretKey(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*SecretResponse, error)
 }
 
 type authServicesUsersClient struct {
@@ -296,9 +542,18 @@ func NewAuthServicesUsersClient(cc grpc.ClientConnInterface) AuthServicesUsersCl
 	return &authServicesUsersClient{cc}
 }
 
-func (c *authServicesUsersClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
+func (c *authServicesUsersClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
 	err := c.cc.Invoke(ctx, "/auth_proto.authServicesUsers/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServicesUsersClient) SecretKey(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*SecretResponse, error) {
+	out := new(SecretResponse)
+	err := c.cc.Invoke(ctx, "/auth_proto.authServicesUsers/SecretKey", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -307,15 +562,19 @@ func (c *authServicesUsersClient) Login(ctx context.Context, in *LoginRequest, o
 
 // AuthServicesUsersServer is the server API for AuthServicesUsers service.
 type AuthServicesUsersServer interface {
-	Login(context.Context, *LoginRequest) (*Response, error)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	SecretKey(context.Context, *SecretRequest) (*SecretResponse, error)
 }
 
 // UnimplementedAuthServicesUsersServer can be embedded to have forward compatible implementations.
 type UnimplementedAuthServicesUsersServer struct {
 }
 
-func (*UnimplementedAuthServicesUsersServer) Login(context.Context, *LoginRequest) (*Response, error) {
+func (*UnimplementedAuthServicesUsersServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (*UnimplementedAuthServicesUsersServer) SecretKey(context.Context, *SecretRequest) (*SecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SecretKey not implemented")
 }
 
 func RegisterAuthServicesUsersServer(s *grpc.Server, srv AuthServicesUsersServer) {
@@ -340,6 +599,24 @@ func _AuthServicesUsers_Login_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthServicesUsers_SecretKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServicesUsersServer).SecretKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth_proto.authServicesUsers/SecretKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServicesUsersServer).SecretKey(ctx, req.(*SecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _AuthServicesUsers_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "auth_proto.authServicesUsers",
 	HandlerType: (*AuthServicesUsersServer)(nil),
@@ -347,6 +624,10 @@ var _AuthServicesUsers_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthServicesUsers_Login_Handler,
+		},
+		{
+			MethodName: "SecretKey",
+			Handler:    _AuthServicesUsers_SecretKey_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

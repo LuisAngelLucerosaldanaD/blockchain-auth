@@ -5,7 +5,6 @@ import (
 	"blion-auth/pkg/cfg/categories"
 	"blion-auth/pkg/cfg/dictionaries"
 	"blion-auth/pkg/cfg/messages"
-
 	"github.com/jmoiron/sqlx"
 )
 
