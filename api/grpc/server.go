@@ -5,6 +5,7 @@ import (
 	"blion-auth/api/grpc/handlers/users"
 	"blion-auth/internal/grpc/auth_proto"
 	"blion-auth/internal/grpc/users_proto"
+	"blion-auth/pkg/auth/interceptor"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
@@ -43,7 +44,14 @@ func (srv *server) Start() {
 		fmt.Println(err.Error())
 		log.Fatalf("Error faltal listener %v", err)
 	}
-	s := grpc.NewServer()
+
+	itr := interceptor.NewAuthInterceptor()
+	serverOptions := []grpc.ServerOption{
+		grpc.UnaryInterceptor(itr.Unary()),
+		grpc.StreamInterceptor(itr.Stream()),
+	}
+
+	s := grpc.NewServer(serverOptions...)
 
 	auth_proto.RegisterAuthServicesUsersServer(s,&login.HandlerLogin{DB: srv.DB, TxID: srv.TxID})
 	users_proto.RegisterAuthServicesUsersServer(s,&users.HandlerUsers{DB: srv.DB, TxID: srv.TxID})
