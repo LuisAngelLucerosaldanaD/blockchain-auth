@@ -19,6 +19,9 @@ type ServicesUsersRepository interface {
 	getAll() ([]*User, error)
 	getByEmail(email string) (*User, error)
 	getByNickname(nickname string) (*User, error)
+	getByIdentityNumber(identityNumber string) (*User, error)
+	updateProfilePhoto(user User) error
+	updatePassword(userId, password string) error
 }
 
 func FactoryStorage(db *sqlx.DB, user *models.User, txID string) ServicesUsersRepository {

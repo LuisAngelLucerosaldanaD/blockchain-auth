@@ -124,3 +124,45 @@ func (s *psql) getByNickname(nickname string) (*User, error) {
 	}
 	return &mdl, nil
 }
+
+func (s *psql) getByIdentityNumber(identityNumber string) (*User, error) {
+	const psqlGetByIdentityNumber = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo, rsa_private, rsa_public, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users WHERE id_number = $1 `
+	mdl := User{}
+	err := s.DB.Get(&mdl, psqlGetByIdentityNumber, identityNumber)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return &mdl, err
+	}
+	return &mdl, nil
+}
+
+func (s *psql) updateProfilePhoto(user User) error {
+	const psqlUpdate = `UPDATE auth.users SET full_path_photo = :full_path_photo, updated_at = :updated_at WHERE id = :id `
+	rs, err := s.DB.NamedExec(psqlUpdate, &user)
+	if err != nil {
+		return err
+	}
+	if i, _ := rs.RowsAffected(); i == 0 {
+		return fmt.Errorf("ecatch:108")
+	}
+	return nil
+}
+
+func (s *psql) updatePassword(userId, password string) error {
+	user := User{
+		ID:        userId,
+		Password:  password,
+		UpdatedAt: time.Now(),
+	}
+	const psqlUpdate = `UPDATE auth.users SET password = :password, updated_at = :updated_at WHERE id = :id `
+	rs, err := s.DB.NamedExec(psqlUpdate, &user)
+	if err != nil {
+		return err
+	}
+	if i, _ := rs.RowsAffected(); i == 0 {
+		return fmt.Errorf("ecatch:108")
+	}
+	return nil
+}

@@ -19,6 +19,7 @@ type ServicesUsersTempRepository interface {
 	getAll() ([]*UserTemp, error)
 	getByEmail(email string) (*UserTemp, error)
 	getByNickname(nickname string) (*UserTemp, error)
+	getByIdentityNumber(identityNumber string) (*UserTemp, error)
 }
 
 func FactoryStorage(db *sqlx.DB, user *models.User, txID string) ServicesUsersTempRepository {

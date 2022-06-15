@@ -3,6 +3,7 @@ package auth
 import (
 	"blion-auth/internal/models"
 	"blion-auth/pkg/auth/accounting"
+	"blion-auth/pkg/auth/files"
 	"blion-auth/pkg/auth/login"
 	"blion-auth/pkg/auth/users"
 	"blion-auth/pkg/auth/users_temp"
@@ -20,9 +21,8 @@ type Server struct {
 	SrvWallet      wallets.PortsServerWallet
 	SrvAccounting  accounting.PortsServerAccounting
 	SrvUsersWallet users_wallet.PortsServerUsersWallet
+	SrvFiles       files.PortsServerFile
 }
-
-
 
 func NewServerAuth(db *sqlx.DB, user *models.User, txID string) *Server {
 	srvLogin := login.NewLoginService(db, txID)
@@ -40,6 +40,9 @@ func NewServerAuth(db *sqlx.DB, user *models.User, txID string) *Server {
 	repoUsersWallet := users_wallet.FactoryStorage(db, user, txID)
 	srvUsersWallet := users_wallet.NewUsersWalletService(repoUsersWallet, user, txID)
 
+	repoS3File := files.FactoryFileDocumentRepository(user, txID)
+	srvFiles := files.NewFileService(repoS3File, user, txID)
+
 	return &Server{
 		SrvLogin:       srvLogin,
 		SrvUserTemp:    srvUserTemp,
@@ -48,5 +51,6 @@ func NewServerAuth(db *sqlx.DB, user *models.User, txID string) *Server {
 		SrvWallet:      srvWallet,
 		SrvAccounting:  srvAccounting,
 		SrvUsersWallet: srvUsersWallet,
+		SrvFiles:       srvFiles,
 	}
 }

@@ -1,6 +1,7 @@
 package users
 
 import (
+	"blion-auth/internal/pwd"
 	"fmt"
 	"time"
 
@@ -18,6 +19,9 @@ type PortsServerUsers interface {
 	GetUsersByEmail(email string) (*User, int, error)
 	GetUsersByNickname(nickname string) (*User, int, error)
 	GetAllUsers() ([]*User, error)
+	GetUserByIdentityNumber(identityNumber string) (*User, int, error)
+	ChangePicturePhoto(user User) error
+	UpdatePassword(userID, password string) error
 }
 
 type service struct {
@@ -122,4 +126,22 @@ func (s *service) ValidateUserIde(nickname string) (*User, int, error) {
 		return nil, 22, err
 	}
 	return m, 29, nil
+}
+
+func (s *service) GetUserByIdentityNumber(identityNumber string) (*User, int, error) {
+	m, err := s.repository.getByIdentityNumber(identityNumber)
+	if err != nil {
+		logger.Error.Println(s.txID, " - couldn`t get user by identityNumber row:", err)
+		return nil, 22, err
+	}
+	return m, 29, nil
+}
+
+func (s *service) ChangePicturePhoto(user User) error {
+	return s.repository.updateProfilePhoto(user)
+}
+
+func (s *service) UpdatePassword(userID, password string) error {
+	password = pwd.Encrypt(password)
+	return s.repository.updatePassword(userID, password)
 }

@@ -4,20 +4,24 @@ import (
 	"blion-auth/internal/email"
 	"blion-auth/internal/env"
 	"blion-auth/internal/grpc/users_proto"
+	"blion-auth/internal/helpers"
 	"blion-auth/internal/logger"
 	"blion-auth/internal/mnemonic"
 	"blion-auth/internal/models"
 	"blion-auth/internal/msg"
 	"blion-auth/internal/password"
+	"blion-auth/internal/pwd"
 	"blion-auth/internal/rsa_generate"
 	"blion-auth/pkg/auth"
 	"blion-auth/pkg/auth/login"
+	"blion-auth/pkg/auth/users"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,14 +36,27 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 	var parameters = make(map[string]string, 0)
 	e := env.NewConfiguration()
 
-	//TODO implements encrypt-decrypt password
 	if request.Password != request.ConfirmPassword {
 		logger.Error.Printf("this password is not equal to confirm_password")
 		res.Code, res.Type, res.Msg = msg.GetByCode(10005, h.DB, h.TxID)
 		return res, fmt.Errorf("this password is not equal to confirm_password")
 	}
 
-	srvUser := auth.NewServerAuth(h.DB, nil, h.TxID)
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	usrI, code, err := srvAuth.SrvUser.GetUserByIdentityNumber(request.IdNumber)
+	if err != nil {
+		logger.Error.Printf("couldn't get user by identity number: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
+		return res, err
+	}
+
+	if usrI != nil {
+		logger.Error.Printf("Ya exisite un usuario con el numero de identificación ingresado: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		return res, fmt.Errorf("ya exisite un usuario con el numero de identificación ingresado")
+	}
+
 	id := uuid.New().String()
 
 	min := 1000
@@ -49,10 +66,15 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 	verifiedCode := password.Encrypt(emailCode)
 
 	request.Password = password.Encrypt(request.Password)
-
-	// TODO valid password and time
-	usr, code, err := srvUser.SrvUserTemp.CreateUsersTemp(id, request.Nickname, request.Email, request.Password, request.Name, request.Lastname,
-		int(request.IdType), request.IdNumber, request.Cellphone, time.Now(), verifiedCode)
+	layout := "2006-01-02T15:04:05.000Z"
+	var birthDate time.Time
+	birthDate, err = time.Parse(layout, request.BirthDate)
+	if err != nil {
+		birthDate = time.Now()
+	}
+	usr, code, err := srvAuth.SrvUserTemp.CreateUsersTemp(id, request.Nickname, request.Email, request.Password,
+		request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone,
+		birthDate, verifiedCode)
 	if err != nil {
 		logger.Error.Printf("couldn't create User: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -86,14 +108,14 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 		UpdatedAt: usr.UpdatedAt,
 	}
 	userResponse := &users_proto.User{
-		ID:                 usr.ID,
-		Nickname:           usr.Nickname,
-		Email:              usr.Email,
-		Name:               usr.Name,
-		Lastname:           usr.Lastname,
-		IdType:             int32(usr.IdType),
-		IdNumber:           usr.IdNumber,
-		Cellphone:          usr.Cellphone,
+		ID:        usr.ID,
+		Nickname:  usr.Nickname,
+		Email:     usr.Email,
+		Name:      usr.Name,
+		Lastname:  usr.Lastname,
+		IdType:    int32(usr.IdType),
+		IdNumber:  usr.IdNumber,
+		Cellphone: usr.Cellphone,
 	}
 
 	token, code, err := login.GenerateJWT(&usrTemp)
@@ -112,22 +134,27 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 		res.Code, res.Type, res.Msg = msg.GetByCode(10002, h.DB, h.TxID)
 		return res, err
 	}
-	request.Id= id
+
+	request.Id = id
 	request.Password = ""
-	request.ConfirmPassword=""
+	request.ConfirmPassword = ""
 	res.Data = userResponse
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
-	return  res, nil
+
+	return res, nil
 
 }
 
 func (h HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.ActivateUserRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
-	// TODO implements GetUserFromToken.
-	//u := ""
+	u, err := helpers.GetUserContext(ctx)
+	if err != nil {
+		logger.Error.Printf("couldn't get token user, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		return res, err
+	}
 
-	// TODO implements encrypt-decrypt verifyCode.
 	rsaPrivate, rsaPublic, err := rsa_generate.Execute()
 	if err != nil {
 		logger.Error.Printf("couldn't generate rsa user in ActivateUser: %v", err)
@@ -136,8 +163,7 @@ func (h HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.Act
 	}
 
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
-	// TODO implements GetUserFromToken.
-	usrTemp, code, err := srvAuth.SrvUserTemp.GetUsersTempByID("u.ID")
+	usrTemp, code, err := srvAuth.SrvUserTemp.GetUsersTempByID(u.ID)
 	if err != nil {
 		logger.Error.Printf("couldn't get user by id: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -160,7 +186,6 @@ func (h HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.Act
 	}
 
 	code, err = srvAuth.SrvUserTemp.DeleteUsersTemp(usr.ID)
-
 	if err != nil {
 		logger.Error.Printf("don't delete user temp by email: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -175,7 +200,6 @@ func (h HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.Act
 
 func (h HandlerUsers) ValidateEmail(ctx context.Context, request *users_proto.ValidateEmailRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
-
 
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
@@ -193,13 +217,13 @@ func (h HandlerUsers) ValidateEmail(ctx context.Context, request *users_proto.Va
 		return res, err
 	}
 
-	if usrTemp == nil && usr == nil {
-		logger.Error.Printf("couldn't get user by email: %v", err)
+	if usrTemp != nil || usr != nil {
+		res.Data = "User Exists"
 		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
-		return res, err
+		return res, fmt.Errorf("el correo electronico ya esta siendo usado por otro usuario")
 	}
 
-	res.Data = "Exists"
+	res.Data = "User no Exists"
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
 	return res, nil
@@ -208,14 +232,13 @@ func (h HandlerUsers) ValidateEmail(ctx context.Context, request *users_proto.Va
 func (h HandlerUsers) ValidateNickname(ctx context.Context, request *users_proto.ValidateNicknameRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
 
-
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
 	usrTemp, code, err := srvAuth.SrvUserTemp.GetUserByNickname(request.Nickname)
 	if err != nil {
 		logger.Error.Printf("couldn't get user by nickname: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res,err
+		return res, err
 	}
 
 	usr, code, err := srvAuth.SrvUser.GetUsersByNickname(request.Nickname)
@@ -225,13 +248,13 @@ func (h HandlerUsers) ValidateNickname(ctx context.Context, request *users_proto
 		return res, err
 	}
 
-	if usrTemp == nil && usr == nil {
-		logger.Error.Printf("couldn't get user by nickname: %v", err)
+	if usrTemp != nil || usr != nil {
+		res.Data = "User Exists"
 		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
-		return res, err
+		return res, fmt.Errorf("el nombre de usuario ya esta siendo usado por otro usuario")
 	}
 
-	res.Data = "Exists"
+	res.Data = "User no Exists"
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
 	return res, nil
@@ -247,20 +270,35 @@ func (h HandlerUsers) GetUserById(ctx context.Context, request *users_proto.GetU
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
 		return res, err
 	}
-	user := &users_proto.User{
-		ID:                 usr.ID,
-		Nickname:           usr.Nickname,
-		Email:              usr.Email,
-		Name:               usr.Name,
-		Lastname:           usr.Lastname,
-		IdType:             int32(usr.IdType),
-		IdNumber:           usr.IdNumber,
-		Cellphone:          usr.Cellphone,
-		StatusId:           int32(usr.StatusId),
-		IdRole:             int32(usr.IdRole),
-		RsaPrivate:         usr.RsaPrivate,
-		RsaPublic:          usr.RsaPublic,
+
+	if usr.FullPathPhoto != "" {
+		pathPhoto := strings.Split(usr.FullPathPhoto, "-/")
+
+		file, _, err := srvUser.SrvFiles.GetFileByPath(pathPhoto[0], pathPhoto[1])
+		if err != nil {
+			logger.Error.Printf("couldn't get profile picture: %v", err)
+		}
+
+		if file != nil {
+			usr.FullPathPhoto = file.Encoding
+		}
 	}
+
+	user := &users_proto.User{
+		ID:         usr.ID,
+		Nickname:   usr.Nickname,
+		Email:      usr.Email,
+		Name:       usr.Name,
+		Lastname:   usr.Lastname,
+		IdType:     int32(usr.IdType),
+		IdNumber:   usr.IdNumber,
+		Cellphone:  usr.Cellphone,
+		StatusId:   int32(usr.StatusId),
+		IdRole:     int32(usr.IdRole),
+		RsaPrivate: usr.RsaPrivate,
+		RsaPublic:  usr.RsaPublic,
+	}
+
 	res.Data = user
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
@@ -293,7 +331,7 @@ func (h HandlerUsers) ValidateIdentity(ctx context.Context, request *users_proto
 	if err != nil {
 		logger.Error.Printf("couldn't get user wallet by user id and identity number: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return  res, err
+		return res, err
 	}
 
 	if userWallet != nil {
@@ -362,7 +400,6 @@ func (h HandlerUsers) ValidateCertifier(ctx context.Context, request *users_prot
 	//u := helpers.GetUserContext(c)
 	userID := ""
 	realIP := ""
-
 
 	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
 	user, code, err := srv.SrvUser.GetUsersByID(userID)
@@ -444,4 +481,151 @@ func (h HandlerUsers) ValidateCertifier(ctx context.Context, request *users_prot
 	return res, nil
 }
 
+func (h *HandlerUsers) ValidIdentityNumber(ctx context.Context, request *users_proto.RequestGetByIdentityNumber) (*users_proto.ResponseGetByIdentityNumber, error) {
+	res := &users_proto.ResponseGetByIdentityNumber{Error: true}
+	srvUser := auth.NewServerAuth(h.DB, nil, h.TxID)
 
+	usrTemp, code, err := srvUser.SrvUserTemp.GetUserByIdentityNumber(request.IdentityNumber)
+	if err != nil {
+		logger.Error.Printf("couldn't get user by identity number: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	usr, code, err := srvUser.SrvUser.GetUserByIdentityNumber(request.IdentityNumber)
+	if err != nil {
+		logger.Error.Printf("couldn't get User by identity number: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	if usrTemp != nil || usr != nil {
+		res.Data = "User Exist"
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, fmt.Errorf("el número de identificación ya esta siendo usado por otro usuario")
+	}
+
+	res.Data = "User no Exists"
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}
+
+func (h *HandlerUsers) UpdateUserPhoto(ctx context.Context, request *users_proto.RequestUpdateUserPhoto) (*users_proto.ResponseUpdateUserPhoto, error) {
+	res := &users_proto.ResponseUpdateUserPhoto{Error: true}
+	u, err := helpers.GetUserContext(ctx)
+	if err != nil {
+		logger.Error.Printf("couldn't get token user, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		return res, err
+	}
+
+	srvUser := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	idNumber, _ := strconv.ParseInt(u.IdNumber, 10, 64)
+	f, err := srvUser.SrvFiles.UploadFile(idNumber, request.FileName, request.FileEncode)
+	if err != nil {
+		logger.Error.Printf("couldn't upload file s3: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(3, h.DB, h.TxID)
+		return res, err
+	}
+
+	user := users.User{
+		ID:            u.ID,
+		FullPathPhoto: f.Path + "-/" + f.FileName,
+		UpdatedAt:     time.Now(),
+	}
+
+	err = srvUser.SrvUser.ChangePicturePhoto(user)
+	if err != nil {
+		logger.Error.Printf("couldn't update profile picture: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		res.Msg = err.Error()
+		return res, err
+	}
+
+	res.Data = "Foto de perfil correctamente actualizada"
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}
+
+func (h *HandlerUsers) GetUserPhoto(ctx context.Context, request *users_proto.RequestGetUserPhoto) (*users_proto.ResponseGetUserPhoto, error) {
+	res := &users_proto.ResponseGetUserPhoto{Error: true, Data: ""}
+	u, err := helpers.GetUserContext(ctx)
+	if err != nil {
+		logger.Error.Printf("couldn't get token user, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		return res, err
+	}
+
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	user, code, err := srvAuth.SrvUser.GetUsersByID(u.ID)
+	if err != nil {
+		logger.Error.Printf("couldn't get user by id: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		res.Msg = err.Error()
+		return res, err
+	}
+
+	if user.FullPathPhoto != "" {
+		pathPhoto := strings.Split(user.FullPathPhoto, "-/")
+		file, code, err := srvAuth.SrvFiles.GetFileByPath(pathPhoto[0], pathPhoto[1])
+		if err != nil {
+			logger.Error.Printf("couldn't get profile picture: %v", err)
+			res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+			return res, err
+		}
+
+		res.Data = file.Encoding
+	}
+
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}
+
+func (h *HandlerUsers) ChangePassword(ctx context.Context, request *users_proto.RequestChangePwd) (*users_proto.ResponseChangePwd, error) {
+	res := &users_proto.ResponseChangePwd{Error: true, Data: ""}
+	u, err := helpers.GetUserContext(ctx)
+	if err != nil {
+		logger.Error.Printf("couldn't get token user, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		return res, err
+	}
+
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	if request.NewPassword != request.ConfirmPassword {
+		logger.Error.Printf("new password and confirm password are not the same")
+		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
+		return res, fmt.Errorf("new password and confirm password are not the same")
+	}
+
+	user, code, err := srvAuth.SrvUser.GetUsersByID(u.ID)
+	if err != nil {
+		logger.Error.Printf("couldn't get user by id: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		res.Msg = err.Error()
+		return res, err
+	}
+
+	if !pwd.Compare(user.ID, user.Password, request.OldPassword) {
+		logger.Error.Printf("old password is not correct")
+		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
+		return res, fmt.Errorf("old password is not correct")
+	}
+
+	err = srvAuth.SrvUser.UpdatePassword(user.ID, request.NewPassword)
+	if err != nil {
+		logger.Error.Printf("couldn't update password: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Data = "password updated"
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}

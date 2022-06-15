@@ -124,3 +124,16 @@ func (s *psql) getByNickname(nickname string) (*UserTemp, error) {
 	}
 	return &mdl, nil
 }
+
+func (s *psql) getByIdentityNumber(identityNumber string) (*UserTemp, error) {
+	const psqlGetByEmail = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, birth_date, verified_code, is_deleted, id_user, deleted_at, created_at, updated_at FROM auth.users_temp WHERE id_number = $1 `
+	mdl := UserTemp{}
+	err := s.DB.Get(&mdl, psqlGetByEmail, identityNumber)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return &mdl, err
+	}
+	return &mdl, nil
+}

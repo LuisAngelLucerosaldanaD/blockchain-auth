@@ -18,6 +18,7 @@ type PortsServerUsersTemp interface {
 	GetAllUsersTemp() ([]*UserTemp, error)
 	GetUserByEmail(email string) (*UserTemp, int, error)
 	GetUserByNickname(nickname string) (*UserTemp, int, error)
+	GetUserByIdentityNumber(identityNumber string) (*UserTemp, int, error)
 }
 
 type service struct {
@@ -108,6 +109,15 @@ func (s *service) GetUserByEmail(email string) (*UserTemp, int, error) {
 
 func (s *service) GetUserByNickname(nickname string) (*UserTemp, int, error) {
 	m, err := s.repository.getByNickname(nickname)
+	if err != nil {
+		logger.Error.Println(s.txID, " - couldn`t getByID row:", err)
+		return nil, 22, err
+	}
+	return m, 29, nil
+}
+
+func (s *service) GetUserByIdentityNumber(identityNumber string) (*UserTemp, int, error) {
+	m, err := s.repository.getByIdentityNumber(identityNumber)
 	if err != nil {
 		logger.Error.Println(s.txID, " - couldn`t getByID row:", err)
 		return nil, 22, err
