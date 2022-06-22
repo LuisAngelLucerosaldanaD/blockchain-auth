@@ -629,3 +629,75 @@ func (h *HandlerUsers) ChangePassword(ctx context.Context, request *users_proto.
 	res.Error = false
 	return res, nil
 }
+
+func (h HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_proto.RequestCreateUserBySystem) (*users_proto.ResponseCreateUserBySystem, error) {
+	res := &users_proto.ResponseCreateUserBySystem{Error: true}
+	rsaPrivate, rsaPublic, err := rsa_generate.Execute()
+	if err != nil {
+		logger.Error.Printf("couldn't generate rsa user in ActivateUser: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
+		return res, err
+	}
+
+	layout := "2006-01-02T15:04:05.000Z"
+	var birthDate time.Time
+	birthDate, err = time.Parse(layout, request.BirthDate)
+	if err != nil {
+		birthDate = time.Now()
+	}
+
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+	usr, code, err := srvAuth.SrvUser.CreateUsers(uuid.New().String(), request.Nickname, request.Email, password.Encrypt(request.Password),
+		request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone, birthDate,
+		"", time.Now(), "", rsaPrivate, rsaPublic, 21)
+	if err != nil {
+		logger.Error.Printf("don't create user: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Data = &users_proto.User{
+		ID:         usr.ID,
+		Nickname:   usr.Nickname,
+		Email:      usr.Email,
+		Name:       usr.Name,
+		Lastname:   usr.Lastname,
+		IdType:     int32(usr.IdType),
+		IdNumber:   usr.IdNumber,
+		Cellphone:  usr.Cellphone,
+		StatusId:   int32(usr.StatusId),
+		LastLogin:  usr.LastLogin.String(),
+		BirthDate:  usr.BirthDate.String(),
+		IdRole:     int32(usr.IdRole),
+		RsaPrivate: usr.RsaPrivate,
+		RsaPublic:  usr.RsaPublic,
+	}
+	res.Error = false
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	return res, nil
+}
+
+func (h HandlerUsers) CreateUserWallet(ctx context.Context, request *users_proto.RqCreateUserWallet) (*users_proto.ResponseCreateUserWallet, error) {
+	res := &users_proto.ResponseCreateUserWallet{Error: true}
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	userWallet, code, err := srvAuth.SrvUsersWallet.CreateUsersWallet(uuid.New().String(), request.UserId, request.WalletId, false)
+	if err != nil {
+		logger.Error.Printf("don't create user wallet: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Data = &users_proto.UserWallet{
+		Id:        userWallet.ID,
+		IdUser:    userWallet.IdUser,
+		IdWallet:  userWallet.IdUser,
+		IsDelete:  userWallet.IsDelete,
+		DeletedAt: userWallet.DeletedAt.String(),
+		CreatedAt: userWallet.CreatedAt.String(),
+		UpdatedAt: userWallet.UpdatedAt.String(),
+	}
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}

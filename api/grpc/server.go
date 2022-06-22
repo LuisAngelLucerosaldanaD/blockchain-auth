@@ -1,10 +1,14 @@
 package grpc
 
 import (
+	"blion-auth/api/grpc/handlers/accounting"
 	"blion-auth/api/grpc/handlers/login"
 	"blion-auth/api/grpc/handlers/users"
+	"blion-auth/api/grpc/handlers/wallets"
+	"blion-auth/internal/grpc/accounting_proto"
 	"blion-auth/internal/grpc/auth_proto"
 	"blion-auth/internal/grpc/users_proto"
+	"blion-auth/internal/grpc/wallet_proto"
 	"blion-auth/pkg/auth/interceptor"
 	"fmt"
 	"github.com/jmoiron/sqlx"
@@ -27,8 +31,8 @@ Version: %s
 
 type server struct {
 	listening string
-	DB   *sqlx.DB
-	TxID string
+	DB        *sqlx.DB
+	TxID      string
 }
 
 func newServer(listening int, db *sqlx.DB, txID string) *server {
@@ -53,8 +57,10 @@ func (srv *server) Start() {
 
 	s := grpc.NewServer(serverOptions...)
 
-	auth_proto.RegisterAuthServicesUsersServer(s,&login.HandlerLogin{DB: srv.DB, TxID: srv.TxID})
-	users_proto.RegisterAuthServicesUsersServer(s,&users.HandlerUsers{DB: srv.DB, TxID: srv.TxID})
+	auth_proto.RegisterAuthServicesUsersServer(s, &login.HandlerLogin{DB: srv.DB, TxID: srv.TxID})
+	users_proto.RegisterAuthServicesUsersServer(s, &users.HandlerUsers{DB: srv.DB, TxID: srv.TxID})
+	wallet_proto.RegisterWalletServicesWalletServer(s, &wallets.HandlerWallet{DB: srv.DB, TxID: srv.TxID})
+	accounting_proto.RegisterAccountingServicesAccountingServer(s, &accounting.HandlerAccounting{DB: srv.DB, TxID: srv.TxID})
 
 	err = s.Serve(lis)
 	if err != nil {

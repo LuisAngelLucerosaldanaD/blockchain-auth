@@ -3,6 +3,7 @@ package interceptor
 import (
 	"blion-auth/internal/env"
 	"blion-auth/internal/logger"
+	"blion-auth/internal/models"
 	"crypto/rsa"
 	"fmt"
 	"io/ioutil"
@@ -14,7 +15,6 @@ import (
 var (
 	verifyKey *rsa.PublicKey
 )
-
 
 // init lee los archivos de firma y validación RSA
 func init() {
@@ -30,22 +30,21 @@ func init() {
 	}
 }
 
-
 // UserClaims is a custom JWT claims that contains some user's information
 type UserClaims struct {
 	jwt.StandardClaims
-	User string `json:"user"`
-	Role int `json:"role"`
+	User models.User `json:"user"`
+	Role int         `json:"role"`
 }
 
 // Verify verifies the access token string and return a user claim if the token is valid
 func Verify(accessToken string) (*UserClaims, error) {
 	token, err := jwt.ParseWithClaims(
-	accessToken,
-	&UserClaims{},
-	func(token *jwt.Token) (interface{}, error) {
-		return verifyKey, nil
-	})
+		accessToken,
+		&UserClaims{},
+		func(token *jwt.Token) (interface{}, error) {
+			return verifyKey, nil
+		})
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}

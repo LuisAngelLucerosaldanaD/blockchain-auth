@@ -126,6 +126,49 @@ message ResponseChangePwd {
   string msg = 5;
 }
 
+message RequestCreateUserBySystem {
+  string nickname = 1;
+  string email = 2;
+  string password = 3;
+  string full_path_photo = 4;
+  string name = 5;
+  string lastname = 6;
+  int32 id_type = 7;
+  string id_number = 8;
+  string cellphone = 9;
+  string birth_date = 10;
+}
+
+message ResponseCreateUserBySystem {
+  bool error = 1;
+  User data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message RqCreateUserWallet {
+  string user_id = 1;
+  string wallet_id = 2;
+}
+
+message ResponseCreateUserWallet {
+  bool error = 1;
+  UserWallet data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message UserWallet {
+  string id = 1;
+  string id_user = 2;
+  string id_wallet = 3;
+  bool   is_delete = 4;
+  string deleted_at = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
 
 service authServicesUsers {
   rpc CreateUser(UserRequest) returns (UserResponse){}
@@ -139,4 +182,6 @@ service authServicesUsers {
   rpc UpdateUserPhoto(RequestUpdateUserPhoto) returns (ResponseUpdateUserPhoto){}
   rpc GetUserPhoto(RequestGetUserPhoto) returns (ResponseGetUserPhoto){}
   rpc ChangePassword(RequestChangePwd) returns (ResponseChangePwd){}
+  rpc CreateUserBySystem(RequestCreateUserBySystem) returns (ResponseCreateUserBySystem){}
+  rpc CreateUserWallet(RqCreateUserWallet) returns (ResponseCreateUserWallet){}
 }

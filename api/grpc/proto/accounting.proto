@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package accounting_proto;
+
+option go_package = "./accounting_proto";
+
+message RequestGetAccountingByWalletId {
+  string id = 1;
+}
+
+message ResponseGetAccountingByWalletId {
+  bool error = 1;
+  Accounting data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message RequestCreateAccounting {
+  string id = 1;
+  string idWallet = 2;
+  double amount = 3;
+  string idUser = 4;
+}
+
+message ResponseCreateAccounting {
+  bool error = 1;
+  Accounting data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message Accounting {
+  string id = 1;
+  string id_wallet = 2;
+  double amount = 3;
+  string id_user = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message RequestSetAmountToAccounting {
+  string wallet_id = 1;
+  double amount = 2;
+  string id_user = 3;
+}
+
+message ResponseSetAmountToAccounting {
+  bool error = 1;
+  Accounting data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+service accountingServicesAccounting {
+  rpc GetAccountingByWalletById(RequestGetAccountingByWalletId) returns (ResponseGetAccountingByWalletId){}
+  rpc CreateAccounting(RequestCreateAccounting) returns (ResponseCreateAccounting){}
+  rpc SetAmountToAccounting(RequestSetAmountToAccounting) returns (ResponseSetAmountToAccounting){}
+}

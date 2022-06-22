@@ -20,8 +20,8 @@ var (
 
 type UserClaims struct {
 	jwt.StandardClaims
-	User string `json:"user"`
-	Role int    `json:"role"`
+	User models.User `json:"user"`
+	Role int         `json:"role"`
 }
 
 // init lee los archivos de firma y validación RSA

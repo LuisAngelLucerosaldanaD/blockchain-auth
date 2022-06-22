@@ -88,5 +88,5 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 			}
 		}*/
 
-	return status.Error(codes.PermissionDenied, "no permission to access this RPC")
+	return nil
 }

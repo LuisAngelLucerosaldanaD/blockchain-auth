@@ -30,7 +30,7 @@ func (s *psql) create(m *User) error {
 	date := time.Now()
 	m.UpdatedAt = date
 	m.CreatedAt = date
-	const psqlInsert = `INSERT INTO auth.users (id ,nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, full_path_photo, rsa_public, recovery_account_at, deleted_at, created_at, updated_at, id_role) VALUES (:id ,:nickname, :email, :password, :name, :lastname, :id_type, :id_number, :cellphone, :status_id, :failed_attempts, :block_date, :disabled_date, :last_login, :last_change_password, :birth_date, :verified_code, :verified_at, :is_deleted, :id_user, :full_path_photo, :rsa_public, :recovery_account_at, :deleted_at,:created_at, :updated_at, :id_role) `
+	const psqlInsert = `INSERT INTO auth.users (id ,nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, full_path_photo, rsa_public, rsa_private, recovery_account_at, deleted_at, created_at, updated_at, id_role) VALUES (:id ,:nickname, :email, :password, :name, :lastname, :id_type, :id_number, :cellphone, :status_id, :failed_attempts, :block_date, :disabled_date, :last_login, :last_change_password, :birth_date, :verified_code, :verified_at, :is_deleted, :id_user, :full_path_photo, :rsa_public, :rsa_private, :recovery_account_at, :deleted_at,:created_at, :updated_at, :id_role) `
 	rs, err := s.DB.NamedExec(psqlInsert, &m)
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func (s *psql) create(m *User) error {
 func (s *psql) update(m *User) error {
 	date := time.Now()
 	m.UpdatedAt = date
-	const psqlUpdate = `UPDATE auth.users SET nickname = :nickname, email = :email, password = :password, name = :name, lastname = :lastname, id_type = :id_type, id_number = :id_number, cellphone = :cellphone, status_id = :status_id, failed_attempts = :failed_attempts, block_date = :block_date, disabled_date = :disabled_date, last_login = :last_login, last_change_password = :last_change_password, birth_date = :birth_date, verified_code = :verified_code, verified_at = :verified_at,  is_deleted = :is_deleted, id_user = :id_user, full_path_photo = :full_path_photo, rsa_public = :rsa_public, recovery_account_at = :recovery_account_at, deleted_at = :deleted_at, updated_at = :updated_at, id_role = :id_role WHERE id = :id `
+	const psqlUpdate = `UPDATE auth.users SET nickname = :nickname, email = :email, password = :password, name = :name, lastname = :lastname, id_type = :id_type, id_number = :id_number, cellphone = :cellphone, status_id = :status_id, failed_attempts = :failed_attempts, block_date = :block_date, disabled_date = :disabled_date, last_login = :last_login, last_change_password = :last_change_password, birth_date = :birth_date, verified_code = :verified_code, verified_at = :verified_at,  is_deleted = :is_deleted, id_user = :id_user, full_path_photo = :full_path_photo, rsa_public = :rsa_public, rsa_private = :rsa_private, recovery_account_at = :recovery_account_at, deleted_at = :deleted_at, updated_at = :updated_at, id_role = :id_role WHERE id = :id `
 	rs, err := s.DB.NamedExec(psqlUpdate, &m)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (s *psql) delete(id string) error {
 
 // GetByID consulta un registro por su ID
 func (s *psql) getByID(id string) (*User, error) {
-	const psqlGetByID = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users WHERE id = $1 `
+	const psqlGetByID = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, rsa_private, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users WHERE id = $1 `
 	mdl := User{}
 	err := s.DB.Get(&mdl, psqlGetByID, id)
 	if err != nil {
@@ -87,7 +87,7 @@ func (s *psql) getByID(id string) (*User, error) {
 // GetAll consulta todos los registros de la BD
 func (s *psql) getAll() ([]*User, error) {
 	var ms []*User
-	const psqlGetAll = ` SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users `
+	const psqlGetAll = ` SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, rsa_private, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users `
 
 	err := s.DB.Select(&ms, psqlGetAll)
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *psql) getAll() ([]*User, error) {
 }
 
 func (s *psql) getByEmail(email string) (*User, error) {
-	const psqlGetByEmail = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users WHERE email = $1 `
+	const psqlGetByEmail = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, rsa_private, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users WHERE email = $1 `
 	mdl := User{}
 	err := s.DB.Get(&mdl, psqlGetByEmail, email)
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *psql) getByEmail(email string) (*User, error) {
 }
 
 func (s *psql) getByNickname(nickname string) (*User, error) {
-	const psqlGetByNickname = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users WHERE nickname = $1 `
+	const psqlGetByNickname = `SELECT id , nickname, email, password, name, lastname, id_type, id_number, cellphone, status_id, failed_attempts, block_date, disabled_date, last_login, last_change_password, birth_date, verified_code, verified_at, is_deleted, id_user, id_role, full_path_photo,  rsa_public, rsa_private, recovery_account_at, deleted_at, created_at, updated_at FROM auth.users WHERE nickname = $1 `
 	mdl := User{}
 	err := s.DB.Get(&mdl, psqlGetByNickname, nickname)
 	if err != nil {
