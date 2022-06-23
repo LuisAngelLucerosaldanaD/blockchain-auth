@@ -171,7 +171,6 @@ func (h *HandlerWallet) ActivateWallet(ctx context.Context, request *wallet_prot
 
 func (h *HandlerWallet) GetWalletById(ctx context.Context, request *wallet_proto.RequestGetWalletById) (*wallet_proto.ResponseGetWalletById, error) {
 	res := &wallet_proto.ResponseGetWalletById{Error: true}
-	var id string
 	if request.Id == "" {
 		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
 		res.Error = false
@@ -180,7 +179,7 @@ func (h *HandlerWallet) GetWalletById(ctx context.Context, request *wallet_proto
 
 	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	wt, _, err := srv.SrvWallet.GetWalletByID(id)
+	wt, _, err := srv.SrvWallet.GetWalletByID(request.Id)
 	if err != nil {
 		logger.Error.Printf("couldn't get wallets by id: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
