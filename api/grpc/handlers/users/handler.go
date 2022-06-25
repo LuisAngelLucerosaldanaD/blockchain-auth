@@ -108,7 +108,7 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 		UpdatedAt: usr.UpdatedAt,
 	}
 	userResponse := &users_proto.User{
-		ID:        usr.ID,
+		Id:        usr.ID,
 		Nickname:  usr.Nickname,
 		Email:     usr.Email,
 		Name:      usr.Name,
@@ -285,7 +285,7 @@ func (h HandlerUsers) GetUserById(ctx context.Context, request *users_proto.GetU
 	}
 
 	user := &users_proto.User{
-		ID:         usr.ID,
+		Id:         usr.ID,
 		Nickname:   usr.Nickname,
 		Email:      usr.Email,
 		Name:       usr.Name,
@@ -657,7 +657,7 @@ func (h HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_pro
 	}
 
 	res.Data = &users_proto.User{
-		ID:         usr.ID,
+		Id:         usr.ID,
 		Nickname:   usr.Nickname,
 		Email:      usr.Email,
 		Name:       usr.Name,
@@ -696,6 +696,110 @@ func (h HandlerUsers) CreateUserWallet(ctx context.Context, request *users_proto
 		DeletedAt: userWallet.DeletedAt.String(),
 		CreatedAt: userWallet.CreatedAt.String(),
 		UpdatedAt: userWallet.UpdatedAt.String(),
+	}
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}
+
+func (h HandlerUsers) GetUserWalletByIdentityNumber(ctx context.Context, request *users_proto.RqGetUserWalletByIdentityNumber) (*users_proto.ResGetUserWalletByIdentityNumber, error) {
+	res := &users_proto.ResGetUserWalletByIdentityNumber{Error: true}
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	userWallet, code, err := srvAuth.SrvUsersWallet.GetUserWalletByUserIDAndIdentityNumber(request.UserId, request.IdentityNumber)
+	if err != nil {
+		logger.Error.Printf("couldn't get user wallet: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	if userWallet != nil {
+		res.Data = &users_proto.UserWallet{
+			Id:        userWallet.ID,
+			IdUser:    userWallet.IdUser,
+			IdWallet:  userWallet.IdUser,
+			IsDelete:  userWallet.IsDelete,
+			DeletedAt: userWallet.DeletedAt.String(),
+			CreatedAt: userWallet.CreatedAt.String(),
+			UpdatedAt: userWallet.UpdatedAt.String(),
+		}
+	}
+
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}
+
+func (h HandlerUsers) GetUserByIdentityNumber(ctx context.Context, request *users_proto.RqGetUserByIdentityNumber) (*users_proto.ResGetUserByIdentityNumber, error) {
+	res := &users_proto.ResGetUserByIdentityNumber{Error: true}
+	srvUser := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	usr, code, err := srvUser.SrvUser.GetUserByIdentityNumber(request.IdentityNumber)
+	if err != nil {
+		logger.Error.Printf("couldn't get User by identity number: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	user := &users_proto.User{
+		Id:         usr.ID,
+		Nickname:   usr.Nickname,
+		Email:      usr.Email,
+		Name:       usr.Name,
+		Lastname:   usr.Lastname,
+		IdType:     int32(usr.IdType),
+		IdNumber:   usr.IdNumber,
+		Cellphone:  usr.Cellphone,
+		StatusId:   int32(usr.StatusId),
+		IdRole:     int32(usr.IdRole),
+		RsaPrivate: usr.RsaPrivate,
+		RsaPublic:  usr.RsaPublic,
+	}
+
+	res.Data = user
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, err
+}
+
+func (h HandlerUsers) UpdateUser(ctx context.Context, request *users_proto.RqUpdateUser) (*users_proto.ResUpdateUser, error) {
+	res := &users_proto.ResUpdateUser{Error: true}
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	layout := "2006-01-02T15:04:05.000Z"
+	birthDate, err := time.Parse(layout, request.BirthDate)
+	if err != nil {
+		birthDate = time.Now()
+	}
+
+	verifiedAt, err := time.Parse(layout, request.VerifiedAt)
+	if err != nil {
+		verifiedAt = time.Now()
+	}
+
+	user, code, err := srvAuth.SrvUser.UpdateUsers(request.Id, request.Nickname, request.Email, request.Password, request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone, birthDate, request.VerifiedCode, verifiedAt, request.FullPathPhoto, request.RsaPrivate, request.RsaPublic, int(request.IdRole))
+	if err != nil {
+		logger.Error.Printf("couldn't update user: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Data = &users_proto.User{
+		Id:            user.ID,
+		Nickname:      user.Nickname,
+		Email:         user.Email,
+		Name:          user.Name,
+		Lastname:      user.Lastname,
+		IdType:        int32(user.IdType),
+		IdNumber:      user.IdUser,
+		Cellphone:     user.Cellphone,
+		StatusId:      int32(user.StatusId),
+		BirthDate:     user.BirthDate.String(),
+		IdUser:        user.IdUser,
+		IdRole:        int32(user.IdRole),
+		FullPathPhoto: user.FullPathPhoto,
+		RsaPublic:     user.RsaPublic,
+		RealIp:        user.RealIP,
 	}
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false

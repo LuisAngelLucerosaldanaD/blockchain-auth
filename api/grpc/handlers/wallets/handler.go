@@ -302,3 +302,24 @@ func (h *HandlerWallet) CreateWalletBySystem(ctx context.Context, request *walle
 	res.Error = false
 	return res, nil
 }
+
+func (h *HandlerWallet) UpdateWallet(ctx context.Context, request *wallet_proto.RqUpdateWallet) (*wallet_proto.ResUpdateWallet, error) {
+	res := &wallet_proto.ResUpdateWallet{Error: true}
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	newMnemonic := mnemonic.Generate()
+	wallet, code, err := srvAuth.SrvWallet.UpdateWallet(request.Id, newMnemonic, request.RsaPublic, request.RsaPrivate, request.RsaPublicDevice, request.RsaPrivateDevice, request.IpDevice, request.IdentityNumber, int(request.StatusId))
+	if err != nil {
+		logger.Error.Printf("couldn't get update wallet, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Data = &wallet_proto.DataWallet{
+		Id:       wallet.ID,
+		Mnemonic: newMnemonic,
+	}
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}

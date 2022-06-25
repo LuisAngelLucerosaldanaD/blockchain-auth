@@ -27,20 +27,35 @@ message UserResponse {
 }
 
 message User {
-  string iD = 1;
+  string id = 1;
   string nickname = 2;
   string email = 3;
-  string name = 4;
-  string lastname = 5;
-  int32 id_type = 6;
-  string id_number = 7;
-  string cellphone = 8;
-  int32 status_id = 9;
-  string last_login = 10;
-  string birth_date = 11;
-  int32 id_role = 12;
-  string rsa_private = 13;
-  string rsa_public = 14;
+  string password = 4;
+  string name = 5;
+  string lastname = 6;
+  int32  id_type = 7;
+  string id_number = 8;
+  string cellphone = 9;
+  int32  status_id = 10;
+  int32  failed_attempts = 11;
+  string block_date = 12;
+  string disabled_date = 13;
+  string last_login = 14;
+  string last_change_password = 15;
+  string birth_date = 16;
+  string verified_code = 17;
+  string verified_at = 18;
+  bool   is_deleted = 19;
+  string id_user = 20;
+  int32  id_role = 21;
+  string full_path_photo = 22;
+  string rsa_private = 23;
+  string rsa_public = 24;
+  string recovery_account_at = 25;
+  string real_ip = 26;
+  string deleted_at = 27;
+  string created_at = 28;
+  string updated_at = 29;
 }
 
 message ActivateUserRequest {
@@ -170,6 +185,58 @@ message UserWallet {
   string updated_at = 7;
 }
 
+message RqGetUserWalletByIdentityNumber {
+  string identity_number = 1;
+  string user_id = 2;
+}
+
+message ResGetUserWalletByIdentityNumber {
+  bool error = 1;
+  UserWallet data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message RqGetUserByIdentityNumber {
+  string identity_number = 1;
+}
+
+message ResGetUserByIdentityNumber {
+  bool error = 1;
+  User data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
+message RqUpdateUser {
+  string id = 1;
+  string nickname = 2;
+  string email = 3;
+  string password = 4;
+  string name = 5;
+  string lastname = 6;
+  int32  idType = 7;
+  string idNumber = 8;
+  string cellphone = 9;
+  string birthDate = 10;
+  string verifiedCode = 11;
+  string verifiedAt = 12;
+  string fullPathPhoto = 13;
+  string rsaPrivate = 14;
+  string rsaPublic = 15;
+  int32  idRole = 16;
+}
+
+message ResUpdateUser {
+  bool error = 1;
+  User data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
 service authServicesUsers {
   rpc CreateUser(UserRequest) returns (UserResponse){}
   rpc ActivateUser(ActivateUserRequest) returns (ValidateResponse){}
@@ -184,4 +251,7 @@ service authServicesUsers {
   rpc ChangePassword(RequestChangePwd) returns (ResponseChangePwd){}
   rpc CreateUserBySystem(RequestCreateUserBySystem) returns (ResponseCreateUserBySystem){}
   rpc CreateUserWallet(RqCreateUserWallet) returns (ResponseCreateUserWallet){}
+  rpc GetUserWalletByIdentityNumber(RqGetUserWalletByIdentityNumber) returns (ResGetUserWalletByIdentityNumber){}
+  rpc GetUserByIdentityNumber(RqGetUserByIdentityNumber) returns (ResGetUserByIdentityNumber){}
+  rpc UpdateUser(RqUpdateUser) returns (ResUpdateUser){}
 }
