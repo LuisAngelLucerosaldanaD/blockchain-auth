@@ -271,32 +271,20 @@ func (h HandlerUsers) GetUserById(ctx context.Context, request *users_proto.GetU
 		return res, err
 	}
 
-	if usr.FullPathPhoto != "" {
-		pathPhoto := strings.Split(usr.FullPathPhoto, "-/")
-
-		file, _, err := srvUser.SrvFiles.GetFileByPath(pathPhoto[0], pathPhoto[1])
-		if err != nil {
-			logger.Error.Printf("couldn't get profile picture: %v", err)
-		}
-
-		if file != nil {
-			usr.FullPathPhoto = file.Encoding
-		}
-	}
-
 	user := &users_proto.User{
-		Id:         usr.ID,
-		Nickname:   usr.Nickname,
-		Email:      usr.Email,
-		Name:       usr.Name,
-		Lastname:   usr.Lastname,
-		IdType:     int32(usr.IdType),
-		IdNumber:   usr.IdNumber,
-		Cellphone:  usr.Cellphone,
-		StatusId:   int32(usr.StatusId),
-		IdRole:     int32(usr.IdRole),
-		RsaPrivate: usr.RsaPrivate,
-		RsaPublic:  usr.RsaPublic,
+		Id:            usr.ID,
+		Nickname:      usr.Nickname,
+		Email:         usr.Email,
+		Name:          usr.Name,
+		Lastname:      usr.Lastname,
+		IdType:        int32(usr.IdType),
+		IdNumber:      usr.IdNumber,
+		Cellphone:     usr.Cellphone,
+		StatusId:      int32(usr.StatusId),
+		IdRole:        int32(usr.IdRole),
+		FullPathPhoto: usr.FullPathPhoto,
+		RsaPrivate:    usr.RsaPrivate,
+		RsaPublic:     usr.RsaPublic,
 	}
 
 	res.Data = user
