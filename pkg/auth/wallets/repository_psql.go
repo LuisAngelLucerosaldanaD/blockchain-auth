@@ -102,7 +102,7 @@ func (s *psql) getAll() ([]*Wallet, error) {
 // GetAll consulta todos los registros de la BD
 func (s *psql) getWalletByUserId(userID string) ([]*Wallet, error) {
 	var ms []*Wallet
-	const psqlGetAll = `SELECT w.id, w.mnemonic, w.rsa_private w.rsa_public, w.rsa_private_device, w.rsa_public_device, w.ip_device, w.status_id, w.identity_number, w.created_at, w.updated_at FROM auth.wallets w JOIN auth.user_wallet uw ON(w.id = uw.id_wallet) JOIN auth.users u ON(uw.id_user = u.id) WHERE u.id  = $1;`
+	const psqlGetAll = `SELECT w.id, w.mnemonic, w.rsa_private, w.rsa_public, w.rsa_private_device, w.rsa_public_device, w.ip_device, w.status_id, w.identity_number, w.created_at, w.updated_at FROM auth.wallets w JOIN auth.user_wallet uw ON(w.id = uw.id_wallet) JOIN auth.users u ON(uw.id_user = u.id) WHERE u.id  = $1;`
 
 	err := s.DB.Select(&ms, psqlGetAll, userID)
 	if err != nil {

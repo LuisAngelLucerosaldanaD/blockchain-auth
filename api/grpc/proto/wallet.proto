@@ -116,6 +116,20 @@ message ResUpdateWallet {
   string msg = 5;
 }
 
+message RqFrozenMoney {
+  string wallet_id = 1;
+  int64 amount = 2;
+  string lottery_id = 3;
+}
+
+message resFrozenMoney {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
 service walletServicesWallet {
   rpc CreateWallet(RequestCreateWallet) returns (ResponseCreateWallet){}
   rpc ActivateWallet(RequestActivateWallet) returns (ResponseActivateWallet){}
@@ -124,4 +138,5 @@ service walletServicesWallet {
   rpc GetWalletByIdentityNumber(RqGetByIdentityNumber) returns (ResponseGetByIdentityNumber){}
   rpc CreateWalletBySystem(RqCreateWalletBySystem) returns (ResponseCreateWalletBySystem){}
   rpc UpdateWallet(RqUpdateWallet) returns (ResUpdateWallet){}
+  rpc FrozenMoney(RqFrozenMoney) returns (resFrozenMoney){}
 }

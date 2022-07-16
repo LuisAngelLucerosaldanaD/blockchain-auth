@@ -323,3 +323,40 @@ func (h *HandlerWallet) UpdateWallet(ctx context.Context, request *wallet_proto.
 	res.Error = false
 	return res, nil
 }
+
+func (h *HandlerWallet) FrozenMoney(ctx context.Context, request *wallet_proto.RqFrozenMoney) (*wallet_proto.ResFrozenMoney, error) {
+	res := &wallet_proto.ResFrozenMoney{Error: true}
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	u, err := helpers.GetUserContext(ctx)
+	if err != nil {
+		logger.Error.Printf("couldn't get token user, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		return res, err
+	}
+
+	_, code, err := srvAuth.SrvFrozenMoney.CreateFrozenMoney(uuid.New().String(), request.WalletId, request.Amount, request.WalletId)
+	if err != nil {
+		logger.Error.Printf("couldn't frozen money, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	account, code, err := srvAuth.SrvAccounting.GetAccountingByWalletID(request.WalletId)
+	if err != nil {
+		logger.Error.Printf("couldn't get account, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, account.Amount-float64(request.Amount), u.ID)
+	if err != nil {
+		logger.Error.Printf("couldn't set account, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}
