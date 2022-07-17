@@ -3,8 +3,8 @@ package frozen_money
 import (
 	"github.com/jmoiron/sqlx"
 
-	"bjungle-consenso/internal/logger"
-	"bjungle-consenso/internal/models"
+	"blion-auth/internal/logger"
+	"blion-auth/internal/models"
 )
 
 const (

@@ -26,7 +26,7 @@ CREATE TABLE auth.users
     rsa_private          varchar(3500) NOT NULL,
     rsa_public           varchar(3500) NOT NULL,
     recovery_account_at  timestamp NULL,
-    deleted_at           timestamp     NOT NULL,
+    deleted_at           timestamp     NULL,
     created_at           timestamp     NOT NULL DEFAULT now(),
     updated_at           timestamp     NOT NULL DEFAULT now(),
     CONSTRAINT users_email_key UNIQUE (email),

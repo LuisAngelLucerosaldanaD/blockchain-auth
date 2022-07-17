@@ -3,8 +3,8 @@ package frozen_money
 import (
 	"fmt"
 
-	"bjungle-consenso/internal/logger"
-	"bjungle-consenso/internal/models"
+	"blion-auth/internal/logger"
+	"blion-auth/internal/models"
 	"github.com/asaskevich/govalidator"
 )
 

@@ -10,6 +10,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var routes = map[string]string{
+	"/auth_proto.authServicesUsers/Login":                     "/auth_proto.authServicesUsers/Login",
+	"/wallet_proto.walletServicesWallet/CreateWalletBySystem": "/wallet_proto.walletServicesWallet/CreateWalletBySystem",
+	"/users_proto.authServicesUsers/CreateUserBySystem":       "/users_proto.authServicesUsers/CreateUserBySystem",
+}
+
 // AuthInterceptor is a server interceptor for authentication and authorization
 type AuthInterceptor struct {
 	accessibleRoles map[string][]int
