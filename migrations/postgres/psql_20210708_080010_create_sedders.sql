@@ -1,36 +1,42 @@
 
 -- +migrate Up
 INSERT INTO cfg.dictionaries (id,name,value,description,created_at,updated_at) VALUES
-                                                                                   (1,'type-message','ERROR','ERROR','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
-                                                                                   (2,'type-message','WARNING','WARNING','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
-                                                                                   (3,'type-message','INFO','INFO','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
-                                                                                   (4,'type-message','SUCCESS','SUCCESS','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
-                                                                                   (5,'type-identification','C.C','cedula de ciudadania','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
-                                                                                   (6,'type-identification','NIT','numero de identificación tributaria','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
-                                                                                   (7,'status-usr','not-activated','not activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (8,'status-usr','activated','activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (9,'status-usr','disabled','disabled','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (10,'status-usr','locked','locked','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54');
+(1,'type-message','ERROR','ERROR','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
+(2,'type-message','WARNING','WARNING','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
+(3,'type-message','INFO','INFO','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
+(4,'type-message','SUCCESS','SUCCESS','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
+(5,'type-identification','C.C','cedula de ciudadania','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
+(6,'type-identification','NIT','numero de identificación tributaria','2020-08-18 16:01:15.537','2020-08-18 16:01:15.537'),
+(7,'status-usr','not-activated','not activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(8,'status-usr','activated','activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(9,'status-usr','disabled','disabled','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(10,'status-usr','locked','locked','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54');
 INSERT INTO cfg.dictionaries (id,name,value,description,created_at,updated_at) VALUES
-                                                                                   (11,'transaction-type','Credential','Credential onlyOne','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (12,'status-block','VALID','Valid','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (13,'status-block','NO-VALID','No Valid','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (14,'status-wallet','not-activated','not activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (15,'status-wallet','activated','activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (16,'status-wallet','disabled','disabled','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (17,'status-wallet','locked','locked','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (18,'transaction-type','emmit','emmit token main wallet','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (19,'category','informacion general','Información General','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (20,'category','informacion educativa','Información educativa','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54');
+(11,'transaction-type','Credential','Credential onlyOne','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(12,'status-block','VALID','Valid','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(13,'status-block','NO-VALID','No Valid','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(14,'status-wallet','not-activated','not activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(15,'status-wallet','activated','activated','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(16,'status-wallet','disabled','disabled','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(17,'status-wallet','locked','locked','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(18,'transaction-type','emmit','emmit token main wallet','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(19,'category','informacion general','Información General','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(20,'category','informacion educativa','Información educativa','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54');
 INSERT INTO cfg.dictionaries (id,name,value,description,created_at,updated_at) VALUES
-                                                                                   (21,'roles','user','user','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (22,'roles','certifier','certifier','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
-                                                                                   (23,'roles','miner','Miner','2022-07-16 11:56:26.949196','2022-07-16 11:56:26.949196'),
-                                                                                   (24,'roles','validator','Validator','2022-07-16 11:57:59.408013','2022-07-16 11:57:59.408013'),
-                                                                                   (25,'process-status','inicio de las inscripciones','Inicio de las inscripciones','2022-07-16 12:05:28.462946','2022-07-16 12:05:28.462946'),
-                                                                                   (26,'process-status','fin de las inscripciones e inicio del sorteo','Fin de las inscripciones e inicio del sorteo','2022-07-16 12:06:27.145615','2022-07-16 12:06:27.145615'),
-                                                                                   (27,'process-status','fin del sorteo e inicio del minado','Fin del sorteo e inicio del minado','2022-07-16 12:07:35.60955','2022-07-16 12:07:35.60955'),
-                                                                                   (28,'process-status','fin del minado y del proceso','Fin del minado y del proceso','2022-07-16 12:12:23.693705','2022-07-16 12:12:23.693705');
+(21,'roles','user','user','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(22,'roles','certifier','certifier','2020-08-18 16:01:15.54','2020-08-18 16:01:15.54'),
+(23,'roles','miner','Miner','2022-07-16 11:56:26.949196','2022-07-16 11:56:26.949196'),
+(24,'roles','validator','Validator','2022-07-16 11:57:59.408013','2022-07-16 11:57:59.408013'),
+(25,'process-status','inicio de las inscripciones','Inicio de las inscripciones','2022-07-16 12:05:28.462946','2022-07-16 12:05:28.462946'),
+(26,'process-status','fin de las inscripciones e inicio del sorteo','Fin de las inscripciones e inicio del sorteo','2022-07-16 12:06:27.145615','2022-07-16 12:06:27.145615'),
+(27,'process-status','fin del sorteo e inicio del minado','Fin del sorteo e inicio del minado','2022-07-16 12:07:35.60955','2022-07-16 12:07:35.60955'),
+(28,'process-status','fin del minado y del proceso','Fin del minado y del proceso','2022-07-16 12:12:23.693705','2022-07-16 12:12:23.693705');
+
+INSERT INTO cfg.categories (id,"name",icon,color,created_at,updated_at) VALUES
+('2e59a864-b7ff-45d9-be8c-7d1b9513f7c5','Información Financiera','financial_info','#A9F375','2022-05-12 08:47:35.604984','2022-05-12 08:47:35.604984'),
+('e697ad0e-a722-4e98-a2be-6770624a8536','Información General','basic_info','#CAC5C4','2022-05-12 08:47:35.604984','2022-05-12 08:47:35.604984'),
+('1fb72571-d3e8-4354-9a7b-7a06fa30953a','Información Medica','image','#75A3F3','2022-05-12 08:47:35.604984','2022-05-12 08:47:35.604984'),
+('98c1789c-64c1-4ae9-8afa-68ec6e45b9c7','Información Educativa','academic_info','#829fe4','2022-05-12 08:47:35.604984','2022-05-12 08:47:35.604984');
 
 INSERT INTO cfg.messages (id, spa, eng, type_message, created_at, updated_at) VALUES (1, 'la estructura no es válida', 'la estructura no es válida', '1', CAST('2020-08-06 19:05:21.083' AS TIMESTAMP), CAST('2020-08-06 19:05:21.083' AS TIMESTAMP));
 INSERT INTO cfg.messages (id, spa, eng, type_message, created_at, updated_at) VALUES (2, 'intentando loguearse', 'intentando loguearse', '1', CAST('2020-08-06 19:05:21.083' AS TIMESTAMP), CAST('2020-08-06 19:05:21.083' AS TIMESTAMP));

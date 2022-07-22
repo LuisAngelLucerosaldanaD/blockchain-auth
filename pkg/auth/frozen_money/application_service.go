@@ -14,6 +14,8 @@ type PortsServerFrozenMoney interface {
 	DeleteFrozenMoney(id string) (int, error)
 	GetFrozenMoneyByID(id string) (*FrozenMoney, int, error)
 	GetAllFrozenMoney() ([]*FrozenMoney, error)
+	GetFrozenMoneyByWalletIDAndLotteryId(walletId, lotteryId string) (*FrozenMoney, int, error)
+	GetFrozenMoneyByWalletID(walletId string) (*FrozenMoney, int, error)
 }
 
 type service struct {
@@ -78,6 +80,24 @@ func (s *service) GetFrozenMoneyByID(id string) (*FrozenMoney, int, error) {
 		return nil, 15, fmt.Errorf("id isn't uuid")
 	}
 	m, err := s.repository.getByID(id)
+	if err != nil {
+		logger.Error.Println(s.txID, " - couldn`t getByID row:", err)
+		return nil, 22, err
+	}
+	return m, 29, nil
+}
+
+func (s *service) GetFrozenMoneyByWalletIDAndLotteryId(walletId, lotteryId string) (*FrozenMoney, int, error) {
+	m, err := s.repository.getByWalletIDAndLotteryId(walletId, lotteryId)
+	if err != nil {
+		logger.Error.Println(s.txID, " - couldn`t getByID row:", err)
+		return nil, 22, err
+	}
+	return m, 29, nil
+}
+
+func (s *service) GetFrozenMoneyByWalletID(walletId string) (*FrozenMoney, int, error) {
+	m, err := s.repository.getByWalletID(walletId)
 	if err != nil {
 		logger.Error.Println(s.txID, " - couldn`t getByID row:", err)
 		return nil, 22, err

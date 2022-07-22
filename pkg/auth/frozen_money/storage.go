@@ -17,6 +17,8 @@ type ServicesFrozenMoneyRepository interface {
 	delete(id string) error
 	getByID(id string) (*FrozenMoney, error)
 	getAll() ([]*FrozenMoney, error)
+	getByWalletIDAndLotteryId(walletID, lotteryId string) (*FrozenMoney, error)
+	getByWalletID(walletID string) (*FrozenMoney, error)
 }
 
 func FactoryStorage(db *sqlx.DB, user *models.User, txID string) ServicesFrozenMoneyRepository {

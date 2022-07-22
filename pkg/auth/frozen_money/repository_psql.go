@@ -83,6 +83,34 @@ func (s *psql) getByID(id string) (*FrozenMoney, error) {
 	return &mdl, nil
 }
 
+// GetByID consulta un registro por su ID
+func (s *psql) getByWalletIDAndLotteryId(walletID, lotteryId string) (*FrozenMoney, error) {
+	const psqlGetByID = `SELECT id , wallet_id, amount, lottery_id, created_at, updated_at FROM auth.frozen_money WHERE wallet_id = $1 AND lottery_id = $2`
+	mdl := FrozenMoney{}
+	err := s.DB.Get(&mdl, psqlGetByID, walletID, lotteryId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return &mdl, err
+	}
+	return &mdl, nil
+}
+
+// GetByID consulta un registro por su ID
+func (s *psql) getByWalletID(walletID string) (*FrozenMoney, error) {
+	const psqlGetByID = `SELECT id , wallet_id, amount, lottery_id, created_at, updated_at FROM auth.frozen_money WHERE wallet_id = $1 order by id desc limit 1`
+	mdl := FrozenMoney{}
+	err := s.DB.Get(&mdl, psqlGetByID, walletID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return &mdl, err
+	}
+	return &mdl, nil
+}
+
 // GetAll consulta todos los registros de la BD
 func (s *psql) getAll() ([]*FrozenMoney, error) {
 	var ms []*FrozenMoney
