@@ -1,7 +1,6 @@
 package users
 
 import (
-	"blion-auth/internal/email"
 	"blion-auth/internal/env"
 	"blion-auth/internal/grpc/users_proto"
 	"blion-auth/internal/helpers"
@@ -12,6 +11,8 @@ import (
 	"blion-auth/internal/password"
 	"blion-auth/internal/pwd"
 	"blion-auth/internal/rsa_generate"
+	"blion-auth/internal/send_grid"
+	genTemplate "blion-auth/internal/template"
 	"blion-auth/pkg/auth"
 	"blion-auth/pkg/auth/login"
 	"blion-auth/pkg/auth/users"
@@ -19,6 +20,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -30,10 +32,11 @@ type HandlerUsers struct {
 	TxID string
 }
 
-func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserRequest) (*users_proto.UserResponse, error) {
-	res := &users_proto.UserResponse{Error: true}
+func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserRequest) (*users_proto.ResponseCreateUser, error) {
+	res := &users_proto.ResponseCreateUser{Error: true}
 
 	var parameters = make(map[string]string, 0)
+	var mailAttachment []*mail.Attachment
 	e := env.NewConfiguration()
 
 	if request.Password != request.ConfirmPassword {
@@ -63,15 +66,18 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 	max := 9999
 	rand.Seed(time.Now().UnixNano())
 	emailCode := strconv.Itoa(rand.Intn(max-min+1) + min)
+	parameters["@access-code"] = emailCode
 	verifiedCode := password.Encrypt(emailCode)
 
 	request.Password = password.Encrypt(request.Password)
+
 	layout := "2006-01-02T15:04:05.000Z"
 	var birthDate time.Time
 	birthDate, err = time.Parse(layout, request.BirthDate)
 	if err != nil {
 		birthDate = time.Now()
 	}
+
 	usr, code, err := srvAuth.SrvUserTemp.CreateUsersTemp(id, request.Nickname, request.Email, request.Password,
 		request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone,
 		birthDate, verifiedCode)
@@ -81,18 +87,11 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 		return res, err
 	}
 
+	var tos []send_grid.To
+	tos = append(tos, send_grid.To{Mail: request.Email, Name: "guest"})
+
 	usr.Password = ""
 	usr.VerifiedCode = ""
-
-	parameters["@access-code"] = emailCode
-	tos := []string{request.Email}
-
-	err = email.Send(tos, parameters, e.Template.EmailCode, "Access code to verify user")
-	if err != nil {
-		logger.Error.Println("error when execute send email: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(10002, h.DB, h.TxID)
-		return res, err
-	}
 
 	usrTemp := models.User{
 		ID:        usr.ID,
@@ -107,19 +106,8 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 		CreatedAt: usr.CreatedAt,
 		UpdatedAt: usr.UpdatedAt,
 	}
-	userResponse := &users_proto.User{
-		Id:        usr.ID,
-		Nickname:  usr.Nickname,
-		Email:     usr.Email,
-		Name:      usr.Name,
-		Lastname:  usr.Lastname,
-		IdType:    int32(usr.IdType),
-		IdNumber:  usr.IdNumber,
-		Cellphone: usr.Cellphone,
-	}
 
 	token, code, err := login.GenerateJWT(&usrTemp)
-
 	if err != nil {
 		logger.Error.Println("error, don't create token: %V", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -128,22 +116,37 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 
 	parameters["@url-token"] = e.Portal.Url + e.Portal.ActivateAccount + token
 
-	err = email.Send(tos, parameters, e.Template.EmailToken, "Verify account")
+	bodyCode, err := genTemplate.GenerateTemplateMail(parameters, e.Template.EmailToken)
 	if err != nil {
-		logger.Error.Println("error when execute send email: %V", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(10002, h.DB, h.TxID)
+		logger.Error.Printf("couldn't generate body in notification email")
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, err
+	}
+
+	emailApi := send_grid.Model{
+		FromMail:    e.SendGrid.FromMail,
+		FromName:    e.SendGrid.FromName,
+		Tos:         tos,
+		Subject:     "Verificación de cuenta BLion",
+		HTMLContent: bodyCode,
+		Attachments: mailAttachment,
+	}
+
+	err = emailApi.SendMail()
+	if err != nil {
+		logger.Error.Println("error when execute send email: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
 		return res, err
 	}
 
 	request.Id = id
 	request.Password = ""
 	request.ConfirmPassword = ""
-	res.Data = userResponse
+
+	res.Data = "Usuario creado correctamente, verifique su cuenta para poder iniciar sesión"
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
-
 	return res, nil
-
 }
 
 func (h HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.ActivateUserRequest) (*users_proto.ValidateResponse, error) {

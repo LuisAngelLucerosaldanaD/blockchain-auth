@@ -16,7 +16,6 @@ type configuration struct {
 	App      App      `json:"app"`
 	DB       DB       `json:"db"`
 	Template Template `json:"template"`
-	Smtp     Smtp     `json:"smtp"`
 	SendGrid SendGrid `json:"send_grid"`
 	Files    Files    `json:"files"`
 	Portal   Portal   `json:"portal"`
@@ -53,15 +52,8 @@ type DB struct {
 	SSLMode  string `json:"ssl_mode"`
 }
 
-type Smtp struct {
-	Port     int    `json:"port"`
-	Host     string `json:"host"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type SendGrid struct {
-	Key      string `json:"password"`
+	Key      string `json:"key"`
 	FromMail string `json:"from_mail"`
 	FromName string `json:"from_name"`
 }

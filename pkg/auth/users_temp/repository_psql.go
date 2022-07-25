@@ -30,6 +30,7 @@ func (s *psql) create(m *UserTemp) error {
 	date := time.Now()
 	m.UpdatedAt = date
 	m.CreatedAt = date
+	m.IdUser = m.ID
 	const psqlInsert = `INSERT INTO auth.users_temp (id ,nickname, email, password, name, lastname, id_type, id_number, cellphone, birth_date, verified_code, is_deleted, id_user, deleted_at, created_at, updated_at) VALUES (:id ,:nickname, :email, :password, :name, :lastname, :id_type, :id_number, :cellphone, :birth_date, :verified_code, :is_deleted, :id_user, :deleted_at,:created_at, :updated_at) `
 	rs, err := s.DB.NamedExec(psqlInsert, &m)
 	if err != nil {

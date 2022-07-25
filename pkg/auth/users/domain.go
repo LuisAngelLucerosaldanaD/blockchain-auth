@@ -12,10 +12,10 @@ type User struct {
 	Nickname           string    `json:"nickname" db:"nickname" valid:"required"`
 	Email              string    `json:"email" db:"email" valid:"required"`
 	Password           string    `json:"password" db:"password" valid:"required"`
-	Name               string    `json:"name" db:"name" valid:"required"`
-	Lastname           string    `json:"lastname" db:"lastname" valid:"required"`
+	Name               string    `json:"name" db:"name" valid:"-"`
+	Lastname           string    `json:"lastname" db:"lastname" valid:"-"`
 	IdType             int       `json:"id_type" db:"id_type" valid:"required"`
-	IdNumber           string    `json:"id_number" db:"id_number" valid:"required"`
+	IdNumber           string    `json:"id_number" db:"id_number" valid:"-"`
 	Cellphone          string    `json:"cellphone" db:"cellphone" valid:"required"`
 	StatusId           int       `json:"status_id" db:"status_id" valid:"required"`
 	FailedAttempts     int       `json:"failed_attempts,omitempty" db:"failed_attempts"`

@@ -133,6 +133,7 @@ message resFrozenMoney {
 message RqUnFreezeMoney {
   string wallet_id = 1;
   string lottery_id = 2;
+  double penalty = 3;
 }
 
 message resUnFreezeMoney {

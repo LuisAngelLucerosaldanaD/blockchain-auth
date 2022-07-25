@@ -1,7 +1,6 @@
 package wallets
 
 import (
-	"blion-auth/internal/email"
 	"blion-auth/internal/env"
 	"blion-auth/internal/grpc/wallet_proto"
 	"blion-auth/internal/helpers"
@@ -11,12 +10,15 @@ import (
 	"blion-auth/internal/msg"
 	"blion-auth/internal/password"
 	"blion-auth/internal/rsa_generate"
+	"blion-auth/internal/send_grid"
+	genTemplate "blion-auth/internal/template"
 	"blion-auth/pkg/auth"
 	"blion-auth/pkg/auth/login"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 type HandlerWallet struct {
@@ -27,6 +29,7 @@ type HandlerWallet struct {
 func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.RequestCreateWallet) (*wallet_proto.ResponseCreateWallet, error) {
 	res := &wallet_proto.ResponseCreateWallet{Error: true}
 	e := env.NewConfiguration()
+	var mailAttachment []*mail.Attachment
 
 	var parameters = make(map[string]string, 0)
 	u, err := helpers.GetUserContext(ctx)
@@ -47,7 +50,8 @@ func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.
 		return res, err
 	}
 
-	tos := []string{u.Email}
+	var tos []send_grid.To
+	tos = append(tos, send_grid.To{Mail: u.Email, Name: "guest"})
 
 	usrTemp := models.User{
 		ID:        u.ID,
@@ -64,7 +68,6 @@ func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.
 	}
 
 	token, code, err := login.GenerateJWT(&usrTemp)
-
 	if err != nil {
 		logger.Error.Println("error GenerateJWT: %V", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -73,10 +76,26 @@ func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.
 
 	parameters["@url-token"] = e.Portal.Url + e.Portal.ActivateWallet + token
 
-	err = email.Send(tos, parameters, e.Template.EmailWalletToken, "Activate Wallet")
+	bodyCode, err := genTemplate.GenerateTemplateMail(parameters, e.Template.EmailToken)
 	if err != nil {
-		logger.Error.Println("error when execute send email: %V", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(10002, h.DB, h.TxID)
+		logger.Error.Printf("couldn't generate body in notification email")
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, err
+	}
+
+	emailApi := send_grid.Model{
+		FromMail:    e.SendGrid.FromMail,
+		FromName:    e.SendGrid.FromName,
+		Tos:         tos,
+		Subject:     "Verificación de cuenta BLion",
+		HTMLContent: bodyCode,
+		Attachments: mailAttachment,
+	}
+
+	err = emailApi.SendMail()
+	if err != nil {
+		logger.Error.Println("error when execute send email: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
 		return res, err
 	}
 
@@ -179,11 +198,17 @@ func (h *HandlerWallet) GetWalletById(ctx context.Context, request *wallet_proto
 
 	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	wt, _, err := srv.SrvWallet.GetWalletByID(request.Id)
+	wt, code, err := srv.SrvWallet.GetWalletByID(request.Id)
 	if err != nil {
 		logger.Error.Printf("couldn't get wallets by id: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
 		return res, err
+	}
+
+	if wt == nil {
+		logger.Error.Printf("couldn't get wallets by id: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, fmt.Errorf("No se encontro una wallet con el id proporcionado")
 	}
 
 	wallet := wallet_proto.Wallet{
@@ -392,7 +417,13 @@ func (h *HandlerWallet) UnFreezeMoney(ctx context.Context, request *wallet_proto
 		return res, err
 	}
 
-	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, account.Amount+float64(frozenMoney.Amount), u.ID)
+	amount := account.Amount + float64(frozenMoney.Amount)
+
+	if request.Penalty > 0 {
+		amount -= request.Penalty
+	}
+
+	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, amount, u.ID)
 	if err != nil {
 		logger.Error.Printf("couldn't set account, error: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)

@@ -26,6 +26,14 @@ message UserResponse {
   string msg = 5;
 }
 
+message responseCreateUser {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
 message User {
   string id = 1;
   string nickname = 2;
@@ -238,7 +246,7 @@ message ResUpdateUser {
 }
 
 service authServicesUsers {
-  rpc CreateUser(UserRequest) returns (UserResponse){}
+  rpc CreateUser(UserRequest) returns (responseCreateUser){}
   rpc ActivateUser(ActivateUserRequest) returns (ValidateResponse){}
   rpc ValidateEmail(ValidateEmailRequest) returns (ValidateResponse){}
   rpc ValidateNickname(ValidateNicknameRequest) returns (ValidateResponse){}
