@@ -796,3 +796,82 @@ func (h HandlerUsers) UpdateUser(ctx context.Context, request *users_proto.RqUpd
 	res.Error = false
 	return res, nil
 }
+
+func (h HandlerUsers) RequestChangePassword(ctx context.Context, request *users_proto.RqChangePwd) (*users_proto.ResAnny, error) {
+	res := &users_proto.ResAnny{}
+	e := env.NewConfiguration()
+	var parameters = make(map[string]string, 0)
+	var mailAttachment []*mail.Attachment
+
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+
+	usrI, code, err := srvAuth.SrvUser.GetUsersByEmail(request.Email)
+	if err != nil {
+		logger.Error.Printf("couldn't get user by identity number: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
+		return res, err
+	}
+
+	if usrI == nil {
+		logger.Error.Printf("couldn't get user by identity number: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, fmt.Errorf("no se pudo obtener el usuario por email")
+	}
+
+	var tos []send_grid.To
+	tos = append(tos, send_grid.To{Mail: request.Email, Name: usrI.Name})
+
+	usrI.Password = ""
+	usrI.VerifiedCode = ""
+
+	usrTemp := models.User{
+		ID:        usrI.ID,
+		Nickname:  usrI.Nickname,
+		Email:     usrI.Email,
+		Name:      usrI.Name,
+		Lastname:  usrI.Lastname,
+		IdType:    usrI.IdType,
+		IdNumber:  usrI.IdNumber,
+		Cellphone: usrI.Cellphone,
+		BirthDate: usrI.BirthDate,
+		CreatedAt: usrI.CreatedAt,
+		UpdatedAt: usrI.UpdatedAt,
+	}
+
+	token, code, err := login.GenerateJWT(&usrTemp)
+	if err != nil {
+		logger.Error.Println("error, don't create token: %V", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	parameters["@url-token"] = e.Portal.Url + e.Portal.ChangePwd + token
+
+	bodyCode, err := genTemplate.GenerateTemplateMail(parameters, e.Template.ChangePwd)
+	if err != nil {
+		logger.Error.Printf("couldn't generate body in notification email")
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, err
+	}
+
+	emailApi := send_grid.Model{
+		FromMail:    e.SendGrid.FromMail,
+		FromName:    e.SendGrid.FromName,
+		Tos:         tos,
+		Subject:     "Verificación de cuenta BLion",
+		HTMLContent: bodyCode,
+		Attachments: mailAttachment,
+	}
+
+	err = emailApi.SendMail()
+	if err != nil {
+		logger.Error.Println("error when execute send email: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Data = "Se ha solicitado correctamente el cambio de contraseña"
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}

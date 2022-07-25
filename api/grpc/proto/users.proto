@@ -245,6 +245,19 @@ message ResUpdateUser {
   string msg = 5;
 }
 
+message RqChangePwd {
+  string email = 1;
+  string nickname = 2;
+}
+
+message ResAnny {
+  bool error = 1;
+  string data = 2;
+  int32 code = 3;
+  int32 type = 4;
+  string msg = 5;
+}
+
 service authServicesUsers {
   rpc CreateUser(UserRequest) returns (responseCreateUser){}
   rpc ActivateUser(ActivateUserRequest) returns (ValidateResponse){}
@@ -262,4 +275,5 @@ service authServicesUsers {
   rpc GetUserWalletByIdentityNumber(RqGetUserWalletByIdentityNumber) returns (ResGetUserWalletByIdentityNumber){}
   rpc GetUserByIdentityNumber(RqGetUserByIdentityNumber) returns (ResGetUserByIdentityNumber){}
   rpc UpdateUser(RqUpdateUser) returns (ResUpdateUser){}
+  rpc RequestChangePassword(RqChangePwd) returns (ResAnny){}
 }

@@ -14,6 +14,7 @@ var routes = map[string]string{
 	"/auth_proto.authServicesUsers/Login":                     "/auth_proto.authServicesUsers/Login",
 	"/wallet_proto.walletServicesWallet/CreateWalletBySystem": "/wallet_proto.walletServicesWallet/CreateWalletBySystem",
 	"/users_proto.authServicesUsers/CreateUserBySystem":       "/users_proto.authServicesUsers/CreateUserBySystem",
+	"/users_proto.authServicesUsers/RequestChangePassword":    "/users_proto.authServicesUsers/RequestChangePassword",
 }
 
 // AuthInterceptor is a server interceptor for authentication and authorization
@@ -64,11 +65,8 @@ func (interceptor *AuthInterceptor) Stream() grpc.StreamServerInterceptor {
 }
 
 func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string) error {
-	//TODO revisar manejo de rutas
-	//_, ok := interceptor.accessibleRoles[method]
 
-	if method == "/auth_proto.authServicesUsers/Login" {
-		// everyone can access
+	if _, ok := routes[method]; ok {
 		return nil
 	}
 
@@ -87,12 +85,6 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
 	}
-	/*
-		for _, role := range accessibleRoles {
-			if role == claims.Role {
-				return nil
-			}
-		}*/
 
 	return nil
 }

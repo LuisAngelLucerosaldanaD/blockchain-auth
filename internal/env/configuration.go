@@ -38,6 +38,7 @@ type Template struct {
 	EmailCode        string `json:"email_code"`
 	EmailToken       string `json:"email_token"`
 	EmailWalletToken string `json:"email_wallet_token"`
+	ChangePwd        string `json:"change_pwd"`
 }
 
 type DB struct {
@@ -71,6 +72,7 @@ type Portal struct {
 	Url             string `json:"url"`
 	ActivateWallet  string `json:"activate_wallet"`
 	ActivateAccount string `json:"activate_account"`
+	ChangePwd       string `json:"change_pwd"`
 }
 
 func NewConfiguration() *configuration {
