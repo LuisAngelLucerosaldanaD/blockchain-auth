@@ -15,6 +15,10 @@ var routes = map[string]string{
 	"/wallet_proto.walletServicesWallet/CreateWalletBySystem": "/wallet_proto.walletServicesWallet/CreateWalletBySystem",
 	"/users_proto.authServicesUsers/CreateUserBySystem":       "/users_proto.authServicesUsers/CreateUserBySystem",
 	"/users_proto.authServicesUsers/RequestChangePassword":    "/users_proto.authServicesUsers/RequestChangePassword",
+	"/users_proto.authServicesUsers/CreateUser":               "/users_proto.authServicesUsers/CreateUser",
+	"/users_proto.authServicesUsers/ValidateEmail":            "/users_proto.authServicesUsers/ValidateEmail",
+	"/users_proto.authServicesUsers/ValidateNickname":         "/users_proto.authServicesUsers/ValidateNickname",
+	"/users_proto.authServicesUsers/ValidIdentityNumber":      "/users_proto.authServicesUsers/ValidIdentityNumber",
 }
 
 // AuthInterceptor is a server interceptor for authentication and authorization

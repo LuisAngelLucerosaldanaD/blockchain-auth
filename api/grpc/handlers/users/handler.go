@@ -221,9 +221,9 @@ func (h HandlerUsers) ValidateEmail(ctx context.Context, request *users_proto.Va
 	}
 
 	if usrTemp != nil || usr != nil {
-		res.Data = "User Exists"
-		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
-		return res, fmt.Errorf("el correo electronico ya esta siendo usado por otro usuario")
+		res.Data = "el correo electronico ya esta siendo usado por otro usuario"
+		res.Code, res.Type, res.Msg = msg.GetByCode(5, h.DB, h.TxID)
+		return res, nil
 	}
 
 	res.Data = "User no Exists"
@@ -252,9 +252,9 @@ func (h HandlerUsers) ValidateNickname(ctx context.Context, request *users_proto
 	}
 
 	if usrTemp != nil || usr != nil {
-		res.Data = "User Exists"
-		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
-		return res, fmt.Errorf("el nombre de usuario ya esta siendo usado por otro usuario")
+		res.Data = "el nombre de usuario ya esta siendo usado por otro usuario"
+		res.Code, res.Type, res.Msg = msg.GetByCode(5, h.DB, h.TxID)
+		return res, nil
 	}
 
 	res.Data = "User no Exists"
@@ -491,9 +491,9 @@ func (h *HandlerUsers) ValidIdentityNumber(ctx context.Context, request *users_p
 	}
 
 	if usrTemp != nil || usr != nil {
-		res.Data = "User Exist"
-		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
-		return res, fmt.Errorf("el número de identificación ya esta siendo usado por otro usuario")
+		res.Data = "el número de identificación ya esta siendo usado por otro usuario"
+		res.Code, res.Type, res.Msg = msg.GetByCode(5, h.DB, h.TxID)
+		return res, nil
 	}
 
 	res.Data = "User no Exists"
