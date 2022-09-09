@@ -57,6 +57,21 @@ func (s *psql) update(m *User) error {
 	return nil
 }
 
+// Update actualiza un registro en la BD
+func (s *psql) updateIdentity(m *User) error {
+	date := time.Now()
+	m.UpdatedAt = date
+	const psqlUpdate = `UPDATE auth.users SET name = :name, lastname = :lastname, id_number = :id_number, id_role = :id_role WHERE id = :id`
+	rs, err := s.DB.NamedExec(psqlUpdate, &m)
+	if err != nil {
+		return err
+	}
+	if i, _ := rs.RowsAffected(); i == 0 {
+		return fmt.Errorf("ecatch:108")
+	}
+	return nil
+}
+
 // Delete elimina un registro de la BD
 func (s *psql) delete(id string) error {
 	const psqlDelete = `DELETE FROM auth.users WHERE id = :id `

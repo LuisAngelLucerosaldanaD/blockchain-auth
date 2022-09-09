@@ -64,6 +64,15 @@ func NewUsers(id string, nickname string, email string, password string, name st
 	}
 }
 
+func UpdateUser(name string, lastname string, idNumber string, idRole int) *User {
+	return &User{
+		Name:     name,
+		Lastname: lastname,
+		IdNumber: idNumber,
+		IdRole:   idRole,
+	}
+}
+
 func (m *User) valid() (bool, error) {
 	result, err := govalidator.ValidateStruct(m)
 	if err != nil {

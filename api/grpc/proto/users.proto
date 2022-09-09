@@ -258,6 +258,13 @@ message ResAnny {
   string msg = 5;
 }
 
+message RqUpdateUserIdentity {
+  string name = 1;
+  string lastname = 2;
+  string identity_number = 3;
+  int32 id_role = 4;
+}
+
 service authServicesUsers {
   rpc CreateUser(UserRequest) returns (responseCreateUser){}
   rpc ActivateUser(ActivateUserRequest) returns (ValidateResponse){}
@@ -276,4 +283,5 @@ service authServicesUsers {
   rpc GetUserByIdentityNumber(RqGetUserByIdentityNumber) returns (ResGetUserByIdentityNumber){}
   rpc UpdateUser(RqUpdateUser) returns (ResUpdateUser){}
   rpc RequestChangePassword(RqChangePwd) returns (ResAnny){}
+  rpc UpdateUserIdentity(RqUpdateUserIdentity) returns (ResUpdateUser){}
 }

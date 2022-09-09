@@ -22,6 +22,7 @@ type ServicesUsersRepository interface {
 	getByIdentityNumber(identityNumber string) (*User, error)
 	updateProfilePhoto(user User) error
 	updatePassword(userId, password string) error
+	updateIdentity(m *User) error
 }
 
 func FactoryStorage(db *sqlx.DB, user *models.User, txID string) ServicesUsersRepository {

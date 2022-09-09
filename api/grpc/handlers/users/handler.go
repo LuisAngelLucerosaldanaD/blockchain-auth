@@ -32,7 +32,7 @@ type HandlerUsers struct {
 	TxID string
 }
 
-func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserRequest) (*users_proto.ResponseCreateUser, error) {
+func (h *HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserRequest) (*users_proto.ResponseCreateUser, error) {
 	res := &users_proto.ResponseCreateUser{Error: true}
 
 	var parameters = make(map[string]string, 0)
@@ -149,7 +149,7 @@ func (h HandlerUsers) CreateUser(ctx context.Context, request *users_proto.UserR
 	return res, nil
 }
 
-func (h HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.ActivateUserRequest) (*users_proto.ValidateResponse, error) {
+func (h *HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.ActivateUserRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
 	u, err := helpers.GetUserContext(ctx)
 	if err != nil {
@@ -201,7 +201,7 @@ func (h HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.Act
 	return res, nil
 }
 
-func (h HandlerUsers) ValidateEmail(ctx context.Context, request *users_proto.ValidateEmailRequest) (*users_proto.ValidateResponse, error) {
+func (h *HandlerUsers) ValidateEmail(ctx context.Context, request *users_proto.ValidateEmailRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
 
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
@@ -232,7 +232,7 @@ func (h HandlerUsers) ValidateEmail(ctx context.Context, request *users_proto.Va
 	return res, nil
 }
 
-func (h HandlerUsers) ValidateNickname(ctx context.Context, request *users_proto.ValidateNicknameRequest) (*users_proto.ValidateResponse, error) {
+func (h *HandlerUsers) ValidateNickname(ctx context.Context, request *users_proto.ValidateNicknameRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
 
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
@@ -263,7 +263,7 @@ func (h HandlerUsers) ValidateNickname(ctx context.Context, request *users_proto
 	return res, nil
 }
 
-func (h HandlerUsers) GetUserById(ctx context.Context, request *users_proto.GetUserByIDRequest) (*users_proto.UserResponse, error) {
+func (h *HandlerUsers) GetUserById(ctx context.Context, request *users_proto.GetUserByIDRequest) (*users_proto.UserResponse, error) {
 	res := &users_proto.UserResponse{Error: true}
 	srvUser := auth.NewServerAuth(h.DB, nil, h.TxID)
 
@@ -296,7 +296,7 @@ func (h HandlerUsers) GetUserById(ctx context.Context, request *users_proto.GetU
 	return res, err
 }
 
-func (h HandlerUsers) ValidateIdentity(ctx context.Context, request *users_proto.ValidateIdentityRequest) (*users_proto.ValidateResponse, error) {
+func (h *HandlerUsers) ValidateIdentity(ctx context.Context, request *users_proto.ValidateIdentityRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
 
 	// TODO implements GetUserFromToken.
@@ -384,7 +384,7 @@ func (h HandlerUsers) ValidateIdentity(ctx context.Context, request *users_proto
 	return res, nil
 }
 
-func (h HandlerUsers) ValidateCertifier(ctx context.Context, request *users_proto.ValidateCertifierRequest) (*users_proto.ValidateResponse, error) {
+func (h *HandlerUsers) ValidateCertifier(ctx context.Context, request *users_proto.ValidateCertifierRequest) (*users_proto.ValidateResponse, error) {
 	res := &users_proto.ValidateResponse{Error: true}
 
 	// TODO implements GetUserFromToken.
@@ -621,7 +621,7 @@ func (h *HandlerUsers) ChangePassword(ctx context.Context, request *users_proto.
 	return res, nil
 }
 
-func (h HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_proto.RequestCreateUserBySystem) (*users_proto.ResponseCreateUserBySystem, error) {
+func (h *HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_proto.RequestCreateUserBySystem) (*users_proto.ResponseCreateUserBySystem, error) {
 	res := &users_proto.ResponseCreateUserBySystem{Error: true}
 	rsaPrivate, rsaPublic, err := rsa_generate.Execute()
 	if err != nil {
@@ -668,7 +668,7 @@ func (h HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_pro
 	return res, nil
 }
 
-func (h HandlerUsers) CreateUserWallet(ctx context.Context, request *users_proto.RqCreateUserWallet) (*users_proto.ResponseCreateUserWallet, error) {
+func (h *HandlerUsers) CreateUserWallet(ctx context.Context, request *users_proto.RqCreateUserWallet) (*users_proto.ResponseCreateUserWallet, error) {
 	res := &users_proto.ResponseCreateUserWallet{Error: true}
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
@@ -693,7 +693,7 @@ func (h HandlerUsers) CreateUserWallet(ctx context.Context, request *users_proto
 	return res, nil
 }
 
-func (h HandlerUsers) GetUserWalletByIdentityNumber(ctx context.Context, request *users_proto.RqGetUserWalletByIdentityNumber) (*users_proto.ResGetUserWalletByIdentityNumber, error) {
+func (h *HandlerUsers) GetUserWalletByIdentityNumber(ctx context.Context, request *users_proto.RqGetUserWalletByIdentityNumber) (*users_proto.ResGetUserWalletByIdentityNumber, error) {
 	res := &users_proto.ResGetUserWalletByIdentityNumber{Error: true}
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
@@ -721,7 +721,7 @@ func (h HandlerUsers) GetUserWalletByIdentityNumber(ctx context.Context, request
 	return res, nil
 }
 
-func (h HandlerUsers) GetUserByIdentityNumber(ctx context.Context, request *users_proto.RqGetUserByIdentityNumber) (*users_proto.ResGetUserByIdentityNumber, error) {
+func (h *HandlerUsers) GetUserByIdentityNumber(ctx context.Context, request *users_proto.RqGetUserByIdentityNumber) (*users_proto.ResGetUserByIdentityNumber, error) {
 	res := &users_proto.ResGetUserByIdentityNumber{Error: true}
 	srvUser := auth.NewServerAuth(h.DB, nil, h.TxID)
 
@@ -753,7 +753,7 @@ func (h HandlerUsers) GetUserByIdentityNumber(ctx context.Context, request *user
 	return res, err
 }
 
-func (h HandlerUsers) UpdateUser(ctx context.Context, request *users_proto.RqUpdateUser) (*users_proto.ResUpdateUser, error) {
+func (h *HandlerUsers) UpdateUser(ctx context.Context, request *users_proto.RqUpdateUser) (*users_proto.ResUpdateUser, error) {
 	res := &users_proto.ResUpdateUser{Error: true}
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
@@ -797,7 +797,7 @@ func (h HandlerUsers) UpdateUser(ctx context.Context, request *users_proto.RqUpd
 	return res, nil
 }
 
-func (h HandlerUsers) RequestChangePassword(ctx context.Context, request *users_proto.RqChangePwd) (*users_proto.ResAnny, error) {
+func (h *HandlerUsers) RequestChangePassword(ctx context.Context, request *users_proto.RqChangePwd) (*users_proto.ResAnny, error) {
 	res := &users_proto.ResAnny{}
 	e := env.NewConfiguration()
 	var parameters = make(map[string]string, 0)
@@ -871,6 +871,28 @@ func (h HandlerUsers) RequestChangePassword(ctx context.Context, request *users_
 	}
 
 	res.Data = "Se ha solicitado correctamente el cambio de contraseña"
+	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
+	res.Error = false
+	return res, nil
+}
+
+func (h *HandlerUsers) UpdateUserIdentity(ctx context.Context, request *users_proto.RqUpdateUserIdentity) (*users_proto.ResUpdateUser, error) {
+	res := &users_proto.ResUpdateUser{Error: true}
+
+	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
+	user, code, err := srvAuth.SrvUser.UpdateUserIdentity(request.Name, request.Lastname, request.IdentityNumber, int(request.IdRole))
+	if err != nil {
+		logger.Error.Printf("couldn't update user: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
+		return res, err
+	}
+
+	res.Data = &users_proto.User{
+		Name:     user.Name,
+		Lastname: user.Lastname,
+		IdNumber: user.IdUser,
+		IdRole:   int32(user.IdRole),
+	}
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
 	return res, nil

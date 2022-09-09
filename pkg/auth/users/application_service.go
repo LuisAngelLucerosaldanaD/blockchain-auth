@@ -22,6 +22,7 @@ type PortsServerUsers interface {
 	GetUserByIdentityNumber(identityNumber string) (*User, int, error)
 	ChangePicturePhoto(user User) error
 	UpdatePassword(userID, password string) error
+	UpdateUserIdentity(name string, lastname string, idNumber string, idRole int) (*User, int, error)
 }
 
 type service struct {
@@ -58,6 +59,19 @@ func (s *service) UpdateUsers(id string, nickname string, email string, password
 		return m, 15, err
 	}
 	if err := s.repository.update(m); err != nil {
+		logger.Error.Println(s.txID, " - couldn't update Users :", err)
+		return m, 18, err
+	}
+	return m, 29, nil
+}
+
+func (s *service) UpdateUserIdentity(name string, lastname string, idNumber string, idRole int) (*User, int, error) {
+	m := UpdateUser(name, lastname, idNumber, idRole)
+	if valid, err := m.valid(); !valid {
+		logger.Error.Println(s.txID, " - don't meet validations:", err)
+		return m, 15, err
+	}
+	if err := s.repository.updateIdentity(m); err != nil {
 		logger.Error.Println(s.txID, " - couldn't update Users :", err)
 		return m, 18, err
 	}
