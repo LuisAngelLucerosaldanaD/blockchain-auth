@@ -12,8 +12,8 @@ import (
 )
 
 type PortsServerUsers interface {
-	CreateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt time.Time, fullPathPhoto string, rsaPrivate string, rsaPublic string, idRole int) (*User, int, error)
-	UpdateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt time.Time, fullPathPhoto string, rsaPrivate string, rsaPublic string, idRole int) (*User, int, error)
+	CreateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt *time.Time, fullPathPhoto string, idRole int) (*User, int, error)
+	UpdateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt *time.Time, fullPathPhoto string, idRole int) (*User, int, error)
 	DeleteUsers(id string) (int, error)
 	GetUsersByID(id string) (*User, int, error)
 	GetUsersByEmail(email string) (*User, int, error)
@@ -22,7 +22,7 @@ type PortsServerUsers interface {
 	GetUserByIdentityNumber(identityNumber string) (*User, int, error)
 	ChangePicturePhoto(user User) error
 	UpdatePassword(userID, password string) error
-	UpdateUserIdentity(name string, lastname string, idNumber string, idRole int) (*User, int, error)
+	UpdateUserIdentity(id string, name string, lastname string, idNumber string, idRole int) (*User, int, error)
 }
 
 type service struct {
@@ -35,8 +35,8 @@ func NewUsersService(repository ServicesUsersRepository, user *models.User, TxID
 	return &service{repository: repository, user: user, txID: TxID}
 }
 
-func (s *service) CreateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt time.Time, fullPathPhoto string, rsaPrivate string, rsaPublic string, idRole int) (*User, int, error) {
-	m := NewUsers(id, nickname, email, password, name, lastname, idType, idNumber, cellphone, birthDate, verifiedCode, verifiedAt, fullPathPhoto, rsaPrivate, rsaPublic, idRole)
+func (s *service) CreateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt *time.Time, fullPathPhoto string, idRole int) (*User, int, error) {
+	m := NewUsers(id, nickname, email, password, name, lastname, idType, idNumber, cellphone, birthDate, verifiedCode, verifiedAt, fullPathPhoto, idRole)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err
@@ -52,8 +52,8 @@ func (s *service) CreateUsers(id string, nickname string, email string, password
 	return m, 29, nil
 }
 
-func (s *service) UpdateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt time.Time, fullPathPhoto string, rsaPrivate string, rsaPublic string, idRole int) (*User, int, error) {
-	m := NewUsers(id, nickname, email, password, name, lastname, idType, idNumber, cellphone, birthDate, verifiedCode, verifiedAt, fullPathPhoto, rsaPrivate, rsaPublic, idRole)
+func (s *service) UpdateUsers(id string, nickname string, email string, password string, name string, lastname string, idType int, idNumber string, cellphone string, birthDate time.Time, verifiedCode string, verifiedAt *time.Time, fullPathPhoto string, idRole int) (*User, int, error) {
+	m := NewUsers(id, nickname, email, password, name, lastname, idType, idNumber, cellphone, birthDate, verifiedCode, verifiedAt, fullPathPhoto, idRole)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err
@@ -65,12 +65,8 @@ func (s *service) UpdateUsers(id string, nickname string, email string, password
 	return m, 29, nil
 }
 
-func (s *service) UpdateUserIdentity(name string, lastname string, idNumber string, idRole int) (*User, int, error) {
-	m := UpdateUser(name, lastname, idNumber, idRole)
-	if valid, err := m.valid(); !valid {
-		logger.Error.Println(s.txID, " - don't meet validations:", err)
-		return m, 15, err
-	}
+func (s *service) UpdateUserIdentity(id string, name string, lastname string, idNumber string, idRole int) (*User, int, error) {
+	m := UpdateUser(id, name, lastname, idNumber, idRole)
 	if err := s.repository.updateIdentity(m); err != nil {
 		logger.Error.Println(s.txID, " - couldn't update Users :", err)
 		return m, 18, err

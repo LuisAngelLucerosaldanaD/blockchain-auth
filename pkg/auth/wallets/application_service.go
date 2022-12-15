@@ -11,12 +11,12 @@ import (
 )
 
 type PortsServerWallet interface {
-	CreateWallet(id, mnemonic, rsaPublic, rsaPrivate, rsaPublicDevice, rsaPrivateDevice, ipDevice, identityNumber string, statusId int) (*Wallet, int, error)
-	UpdateWallet(id, mnemonic, rsaPublic, rsaPrivate, rsaPublicDevice, rsaPrivateDevice, ipDevice, identityNumber string, statusId int) (*Wallet, int, error)
+	CreateWallet(id, mnemonic, rsaPublic, ipDevice, identityNumber string, statusId int) (*Wallet, int, error)
+	UpdateWallet(id, mnemonic, ipDevice, identityNumber string, statusId int) (*Wallet, int, error)
 	DeleteWallet(id string) (int, error)
 	GetWalletByID(id string) (*Wallet, int, error)
 	GetAllWallet() ([]*Wallet, error)
-	GetWalletByUserID(userID string) ([]*Wallet, int, error)
+	GetWalletByUserID(userID string) (*Wallet, int, error)
 	GetWalletByIdentityNumber(identityNumber string) (*Wallet, int, error)
 }
 
@@ -30,8 +30,8 @@ func NewWalletService(repository ServicesWalletRepository, user *models.User, Tx
 	return &service{repository: repository, user: user, txID: TxID}
 }
 
-func (s *service) CreateWallet(id, mnemonic, rsaPublic, rsaPrivate, rsaPublicDevice, rsaPrivateDevice, ipDevice, identityNumber string, statusId int) (*Wallet, int, error) {
-	m := NewWallet(id, mnemonic, rsaPublic, rsaPrivate, rsaPublicDevice, rsaPrivateDevice, ipDevice, identityNumber, statusId)
+func (s *service) CreateWallet(id, mnemonic, rsaPublic, ipDevice, identityNumber string, statusId int) (*Wallet, int, error) {
+	m := NewWallet(id, mnemonic, rsaPublic, ipDevice, identityNumber, statusId)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err
@@ -47,8 +47,8 @@ func (s *service) CreateWallet(id, mnemonic, rsaPublic, rsaPrivate, rsaPublicDev
 	return m, 29, nil
 }
 
-func (s *service) UpdateWallet(id, mnemonic, rsaPublic, rsaPrivate, rsaPublicDevice, rsaPrivateDevice, ipDevice, identityNumber string, statusId int) (*Wallet, int, error) {
-	m := NewWallet(id, mnemonic, rsaPublic, rsaPrivate, rsaPublicDevice, rsaPrivateDevice, ipDevice, identityNumber, statusId)
+func (s *service) UpdateWallet(id, mnemonic, ipDevice, identityNumber string, statusId int) (*Wallet, int, error) {
+	m := UpdateWallet(id, mnemonic, ipDevice, identityNumber, statusId)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err
@@ -93,7 +93,7 @@ func (s *service) GetAllWallet() ([]*Wallet, error) {
 	return s.repository.getAll()
 }
 
-func (s *service) GetWalletByUserID(userID string) ([]*Wallet, int, error) {
+func (s *service) GetWalletByUserID(userID string) (*Wallet, int, error) {
 	if !govalidator.IsUUID(userID) {
 		logger.Error.Println(s.txID, " - don't meet validations:", fmt.Errorf("id isn't uuid"))
 		return nil, 15, fmt.Errorf("id isn't uuid")

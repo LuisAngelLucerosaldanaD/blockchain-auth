@@ -57,13 +57,11 @@ message User {
   string id_user = 20;
   int32  id_role = 21;
   string full_path_photo = 22;
-  string rsa_private = 23;
-  string rsa_public = 24;
-  string recovery_account_at = 25;
-  string real_ip = 26;
-  string deleted_at = 27;
-  string created_at = 28;
-  string updated_at = 29;
+  string recovery_account_at = 23;
+  string real_ip = 24;
+  string deleted_at = 25;
+  string created_at = 26;
+  string updated_at = 27;
 }
 
 message ActivateUserRequest {
@@ -80,14 +78,6 @@ message ValidateNicknameRequest {
 
 message GetUserByIDRequest {
   string id = 1;
-}
-
-message ValidateIdentityRequest {
-  string identity_number = 1;
-}
-
-message ValidateCertifierRequest {
-  string identity_number = 1;
 }
 
 message ValidateResponse {
@@ -232,9 +222,7 @@ message RqUpdateUser {
   string verifiedCode = 11;
   string verifiedAt = 12;
   string fullPathPhoto = 13;
-  string rsaPrivate = 14;
-  string rsaPublic = 15;
-  int32  idRole = 16;
+  int32  idRole = 14;
 }
 
 message ResUpdateUser {
@@ -259,10 +247,11 @@ message ResAnny {
 }
 
 message RqUpdateUserIdentity {
-  string name = 1;
-  string lastname = 2;
-  string identity_number = 3;
-  int32 id_role = 4;
+  string id = 1;
+  string name = 2;
+  string lastname = 3;
+  string identity_number = 4;
+  int32 id_role = 5;
 }
 
 service authServicesUsers {
@@ -271,8 +260,6 @@ service authServicesUsers {
   rpc ValidateEmail(ValidateEmailRequest) returns (ValidateResponse){}
   rpc ValidateNickname(ValidateNicknameRequest) returns (ValidateResponse){}
   rpc GetUserById(GetUserByIDRequest) returns (UserResponse){}
-  rpc ValidateIdentity(ValidateIdentityRequest) returns (ValidateResponse){}
-  rpc ValidateCertifier(ValidateCertifierRequest) returns (ValidateResponse){}
   rpc ValidIdentityNumber(RequestGetByIdentityNumber) returns (ResponseGetByIdentityNumber){}
   rpc UpdateUserPhoto(RequestUpdateUserPhoto) returns (ResponseUpdateUserPhoto){}
   rpc GetUserPhoto(RequestGetUserPhoto) returns (ResponseGetUserPhoto){}

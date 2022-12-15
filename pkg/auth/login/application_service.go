@@ -83,8 +83,6 @@ func (s *service) getUserByEmailOrNickname(nickname, email string) (*models.User
 func (s *service) resetFieldsUser(user *models.User) *models.User {
 	//TODO: reset fields date and verify code.
 	user.Password = ""
-	user.RsaPrivate = ""
-	user.RsaPublic = ""
 	user.FailedAttempts = 0
 	user.IdType = 0
 	user.VerifiedCode = ""

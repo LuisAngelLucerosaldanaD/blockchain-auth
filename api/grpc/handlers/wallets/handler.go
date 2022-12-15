@@ -1,6 +1,7 @@
 package wallets
 
 import (
+	"blion-auth/internal/ciphers"
 	"blion-auth/internal/env"
 	"blion-auth/internal/grpc/wallet_proto"
 	"blion-auth/internal/helpers"
@@ -9,7 +10,6 @@ import (
 	"blion-auth/internal/models"
 	"blion-auth/internal/msg"
 	"blion-auth/internal/password"
-	"blion-auth/internal/rsa_generate"
 	"blion-auth/internal/send_grid"
 	genTemplate "blion-auth/internal/template"
 	"blion-auth/pkg/auth"
@@ -119,8 +119,6 @@ func (h *HandlerWallet) ActivateWallet(ctx context.Context, request *wallet_prot
 		return res, err
 	}
 
-	var rsaPrivate, rsaPublic, rsaPrivateDevice, rsaPublicDevice string
-
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
 	walletTemp, code, err := srvAuth.SrvWalletTemp.GetWalletTempByUserID(request.Id, u.ID)
@@ -138,11 +136,14 @@ func (h *HandlerWallet) ActivateWallet(ctx context.Context, request *wallet_prot
 		res.Code, res.Type, res.Msg = msg.GetByCode(10004, h.DB, h.TxID)
 		return res, fmt.Errorf("the verification mnemonic is not correct")
 	}
-	//TODO Create worker RSA
-	rsaPrivate, rsaPublic, err = rsa_generate.Execute()
-	rsaPrivateDevice, rsaPublicDevice, err = rsa_generate.Execute()
-	wallet, code, err := srvAuth.SrvWallet.CreateWallet(walletTemp.ID, walletTemp.Mnemonic, rsaPublic, rsaPrivate,
-		rsaPublicDevice, rsaPrivateDevice, "127.0.0.1", u.IdNumber, 1)
+
+	rsaPrivate, rsaPublic, err := ciphers.GenerateKeyPairEcdsa()
+	if err != nil {
+		logger.Error.Printf("No se pudo generar las claves ECDSA: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, fmt.Errorf("no se pudo generar las claves ECDSA")
+	}
+	wallet, code, err := srvAuth.SrvWallet.CreateWallet(walletTemp.ID, walletTemp.Mnemonic, rsaPublic, "127.0.0.1", u.IdNumber, 1)
 	if err != nil {
 		logger.Error.Printf("couldn't create wallet: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -168,18 +169,13 @@ func (h *HandlerWallet) ActivateWallet(ctx context.Context, request *wallet_prot
 		return res, err
 	}
 
-	resWallet := wallet_proto.Wallet{
-		Id:               wallet.ID,
-		Mnemonic:         wallet.Mnemonic,
-		RsaPublic:        wallet.RsaPublic,
-		RsaPrivate:       wallet.RsaPrivate,
-		RsaPublicDevice:  wallet.RsaPublicDevice,
-		RsaPrivateDevice: wallet.RsaPrivateDevice,
-		IpDevice:         wallet.IpDevice,
-		StatusId:         int32(wallet.StatusId),
-		IdentityNumber:   wallet.IdentityNumber,
-		CreatedAt:        wallet.CreatedAt.String(),
-		UpdatedAt:        wallet.UpdatedAt.String(),
+	resWallet := wallet_proto.WalletActive{
+		Id:       wallet.ID,
+		Mnemonic: wallet.Mnemonic,
+		Key: &wallet_proto.KeyPair{
+			Public:  rsaPublic,
+			Private: rsaPrivate,
+		},
 	}
 
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
@@ -208,21 +204,18 @@ func (h *HandlerWallet) GetWalletById(ctx context.Context, request *wallet_proto
 	if wt == nil {
 		logger.Error.Printf("couldn't get wallets by id: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
-		return res, fmt.Errorf("No se encontro una wallet con el id proporcionado")
+		return res, fmt.Errorf("no se encontro una wallet con el id proporcionado")
 	}
 
 	wallet := wallet_proto.Wallet{
-		Id:               wt.ID,
-		Mnemonic:         wt.Mnemonic,
-		RsaPublic:        wt.RsaPublic,
-		RsaPrivate:       wt.RsaPrivate,
-		RsaPublicDevice:  wt.RsaPublicDevice,
-		RsaPrivateDevice: wt.RsaPrivateDevice,
-		IpDevice:         wt.IpDevice,
-		StatusId:         int32(wt.StatusId),
-		IdentityNumber:   wt.IdentityNumber,
-		CreatedAt:        wt.CreatedAt.String(),
-		UpdatedAt:        wt.UpdatedAt.String(),
+		Id:             wt.ID,
+		Mnemonic:       wt.Mnemonic,
+		Public:         wt.RsaPublic,
+		IpDevice:       wt.IpDevice,
+		StatusId:       int32(wt.StatusId),
+		IdentityNumber: wt.IdentityNumber,
+		CreatedAt:      wt.CreatedAt.String(),
+		UpdatedAt:      wt.UpdatedAt.String(),
 	}
 
 	res.Data = &wallet
@@ -250,24 +243,18 @@ func (h *HandlerWallet) GetWalletByUserId(ctx context.Context, request *wallet_p
 		return res, err
 	}
 
-	var wallets []*wallet_proto.Wallet
-	for _, wallet := range wt {
-		wallets = append(wallets, &wallet_proto.Wallet{
-			Id:               wallet.ID,
-			Mnemonic:         wallet.Mnemonic,
-			RsaPublic:        wallet.RsaPublic,
-			RsaPrivate:       wallet.RsaPrivate,
-			RsaPublicDevice:  wallet.RsaPublicDevice,
-			RsaPrivateDevice: wallet.RsaPrivateDevice,
-			IpDevice:         wallet.IpDevice,
-			StatusId:         int32(wallet.StatusId),
-			IdentityNumber:   wallet.IdentityNumber,
-			CreatedAt:        wallet.CreatedAt.String(),
-			UpdatedAt:        wallet.UpdatedAt.String(),
-		})
+	wallet := wallet_proto.Wallet{
+		Id:             wt.ID,
+		Mnemonic:       wt.Mnemonic,
+		Public:         wt.RsaPublic,
+		IpDevice:       wt.IpDevice,
+		StatusId:       int32(wt.StatusId),
+		IdentityNumber: wt.IdentityNumber,
+		CreatedAt:      wt.CreatedAt.String(),
+		UpdatedAt:      wt.UpdatedAt.String(),
 	}
 
-	res.Data = wallets
+	res.Data = &wallet
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
 	return res, nil
@@ -285,17 +272,14 @@ func (h *HandlerWallet) GetWalletByIdentityNumber(ctx context.Context, request *
 	}
 
 	wallet := wallet_proto.Wallet{
-		Id:               wt.ID,
-		Mnemonic:         wt.Mnemonic,
-		RsaPublic:        wt.RsaPublic,
-		RsaPrivate:       wt.RsaPrivate,
-		RsaPublicDevice:  wt.RsaPublicDevice,
-		RsaPrivateDevice: wt.RsaPrivateDevice,
-		IpDevice:         wt.IpDevice,
-		StatusId:         int32(wt.StatusId),
-		IdentityNumber:   wt.IdentityNumber,
-		CreatedAt:        wt.CreatedAt.String(),
-		UpdatedAt:        wt.UpdatedAt.String(),
+		Id:             wt.ID,
+		Mnemonic:       wt.Mnemonic,
+		Public:         wt.RsaPublic,
+		IpDevice:       wt.IpDevice,
+		StatusId:       int32(wt.StatusId),
+		IdentityNumber: wt.IdentityNumber,
+		CreatedAt:      wt.CreatedAt.String(),
+		UpdatedAt:      wt.UpdatedAt.String(),
 	}
 
 	res.Data = &wallet
@@ -308,10 +292,13 @@ func (h *HandlerWallet) CreateWalletBySystem(ctx context.Context, request *walle
 	res := &wallet_proto.ResponseCreateWalletBySystem{Error: true}
 	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	rsaPrivate, rsaPublic, _ := rsa_generate.Execute()
-	rsaPrivateDevice, rsaPublicDevice, _ := rsa_generate.Execute()
-	wallet, code, err := srv.SrvWallet.CreateWallet(uuid.New().String(), mnemonic.Generate(), rsaPublic, rsaPrivate,
-		rsaPublicDevice, rsaPrivateDevice, "127.0.0.1", request.IdentityNumber, 1)
+	rsaPrivate, rsaPublic, err := ciphers.GenerateKeyPairEcdsa()
+	if err != nil {
+		logger.Error.Printf("No se pudo generar las claves ECDSA: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, fmt.Errorf("no se pudo generar las claves ECDSA")
+	}
+	wallet, code, err := srv.SrvWallet.CreateWallet(uuid.New().String(), mnemonic.Generate(), rsaPublic, "127.0.0.1", request.IdentityNumber, 1)
 	if err != nil {
 		logger.Error.Printf("couldn't create wallet: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -321,6 +308,10 @@ func (h *HandlerWallet) CreateWalletBySystem(ctx context.Context, request *walle
 	res.Data = &wallet_proto.DataWallet{
 		Id:       wallet.ID,
 		Mnemonic: wallet.Mnemonic,
+		Key: &wallet_proto.KeyPair{
+			Public:  rsaPublic,
+			Private: rsaPrivate,
+		},
 	}
 
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
@@ -333,16 +324,22 @@ func (h *HandlerWallet) UpdateWallet(ctx context.Context, request *wallet_proto.
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
 	newMnemonic := mnemonic.Generate()
-	wallet, code, err := srvAuth.SrvWallet.UpdateWallet(request.Id, newMnemonic, request.RsaPublic, request.RsaPrivate, request.RsaPublicDevice, request.RsaPrivateDevice, request.IpDevice, request.IdentityNumber, int(request.StatusId))
+	wallet, code, err := srvAuth.SrvWallet.UpdateWallet(request.Id, newMnemonic, request.IpDevice, request.IdentityNumber, int(request.StatusId))
 	if err != nil {
 		logger.Error.Printf("couldn't get update wallet, error: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
 		return res, err
 	}
 
-	res.Data = &wallet_proto.DataWallet{
-		Id:       wallet.ID,
-		Mnemonic: newMnemonic,
+	res.Data = &wallet_proto.Wallet{
+		Id:             wallet.ID,
+		Mnemonic:       newMnemonic,
+		Public:         wallet.RsaPublic,
+		IpDevice:       wallet.IpDevice,
+		StatusId:       int32(wallet.StatusId),
+		IdentityNumber: wallet.IdentityNumber,
+		CreatedAt:      wallet.CreatedAt.String(),
+		UpdatedAt:      wallet.UpdatedAt.String(),
 	}
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
@@ -374,7 +371,7 @@ func (h *HandlerWallet) FrozenMoney(ctx context.Context, request *wallet_proto.R
 		return res, err
 	}
 
-	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, account.Amount-float64(request.Amount), u.ID)
+	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, account.Amount-request.Amount, u.ID)
 	if err != nil {
 		logger.Error.Printf("couldn't set account, error: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -417,7 +414,7 @@ func (h *HandlerWallet) UnFreezeMoney(ctx context.Context, request *wallet_proto
 		return res, err
 	}
 
-	amount := account.Amount + float64(frozenMoney.Amount)
+	amount := account.Amount + frozenMoney.Amount
 
 	if request.Penalty > 0 {
 		amount -= request.Penalty

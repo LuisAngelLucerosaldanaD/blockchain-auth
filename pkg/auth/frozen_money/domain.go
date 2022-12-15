@@ -10,13 +10,13 @@ import (
 type FrozenMoney struct {
 	ID        string    `json:"id" db:"id" valid:"required,uuid"`
 	WalletId  string    `json:"wallet_id" db:"wallet_id" valid:"required"`
-	Amount    int64     `json:"amount" db:"amount" valid:"required"`
+	Amount    float64   `json:"amount" db:"amount" valid:"required"`
 	LotteryId string    `json:"lottery_id" db:"lottery_id" valid:"required"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
-func NewFrozenMoney(id string, walletId string, amount int64, lotteryId string) *FrozenMoney {
+func NewFrozenMoney(id string, walletId string, amount float64, lotteryId string) *FrozenMoney {
 	return &FrozenMoney{
 		ID:        id,
 		WalletId:  walletId,

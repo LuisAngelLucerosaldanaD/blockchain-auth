@@ -5,12 +5,10 @@ import (
 	"blion-auth/internal/grpc/users_proto"
 	"blion-auth/internal/helpers"
 	"blion-auth/internal/logger"
-	"blion-auth/internal/mnemonic"
 	"blion-auth/internal/models"
 	"blion-auth/internal/msg"
 	"blion-auth/internal/password"
 	"blion-auth/internal/pwd"
-	"blion-auth/internal/rsa_generate"
 	"blion-auth/internal/send_grid"
 	genTemplate "blion-auth/internal/template"
 	"blion-auth/pkg/auth"
@@ -158,13 +156,6 @@ func (h *HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.Ac
 		return res, err
 	}
 
-	rsaPrivate, rsaPublic, err := rsa_generate.Execute()
-	if err != nil {
-		logger.Error.Printf("couldn't generate rsa user in ActivateUser: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
-		return res, err
-	}
-
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 	usrTemp, code, err := srvAuth.SrvUserTemp.GetUsersTempByID(u.ID)
 	if err != nil {
@@ -179,9 +170,10 @@ func (h *HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.Ac
 		return res, err
 	}
 
+	verifiedAt := time.Now()
 	usr, code, err := srvAuth.SrvUser.CreateUsers(usrTemp.ID, usrTemp.Nickname, usrTemp.Email, usrTemp.Password,
 		usrTemp.Name, usrTemp.Lastname, usrTemp.IdType, usrTemp.IdNumber, usrTemp.Cellphone, usrTemp.BirthDate,
-		"", time.Now(), "", rsaPrivate, rsaPublic, 21)
+		"", &verifiedAt, "", 21)
 	if err != nil {
 		logger.Error.Printf("don't create user: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -195,7 +187,7 @@ func (h *HandlerUsers) ActivateUser(ctx context.Context, request *users_proto.Ac
 		return res, err
 	}
 
-	res.Data = "Active Account Successful"
+	res.Data = "Active Account Successfully"
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
 	return res, nil
@@ -286,190 +278,12 @@ func (h *HandlerUsers) GetUserById(ctx context.Context, request *users_proto.Get
 		StatusId:      int32(usr.StatusId),
 		IdRole:        int32(usr.IdRole),
 		FullPathPhoto: usr.FullPathPhoto,
-		RsaPrivate:    usr.RsaPrivate,
-		RsaPublic:     usr.RsaPublic,
 	}
 
 	res.Data = user
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
 	res.Error = false
 	return res, err
-}
-
-func (h *HandlerUsers) ValidateIdentity(ctx context.Context, request *users_proto.ValidateIdentityRequest) (*users_proto.ValidateResponse, error) {
-	res := &users_proto.ValidateResponse{Error: true}
-
-	// TODO implements GetUserFromToken.
-	userID := ""
-	realIP := "c.IP()"
-
-	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
-	// TODO implements GetUserFromToken.
-	user, code, err := srv.SrvUser.GetUsersByID("u.ID")
-	if err != nil {
-		logger.Error.Printf("couldn't get user by id: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	if user == nil {
-		logger.Error.Printf("couldn't get user by id: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	userWallet, code, err := srv.SrvUsersWallet.GetUserWalletByUserIDAndIdentityNumber(userID, request.IdentityNumber)
-	if err != nil {
-		logger.Error.Printf("couldn't get user wallet by user id and identity number: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	if userWallet != nil {
-		res.Data = "the user has already been verified"
-		res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
-		res.Error = false
-		return res, err
-	}
-
-	_, code, err = srv.SrvUser.UpdateUsers(user.ID, user.Nickname, user.Email, user.Password, user.Name, user.Lastname, user.IdType, request.IdentityNumber, user.Cellphone, user.BirthDate, user.VerifiedCode, user.VerifiedAt, user.FullPathPhoto, user.RsaPrivate, user.RsaPublic, 21)
-
-	if err != nil {
-		logger.Error.Printf("couldn't update user by id: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	wallet, code, err := srv.SrvWallet.GetWalletByIdentityNumber(request.IdentityNumber)
-	if err != nil {
-		logger.Error.Printf("couldn't get wallet by identity number: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	walletID := wallet.ID
-
-	if wallet == nil {
-		rsaPrivate, rsaPublic, _ := rsa_generate.Execute()
-		rsaPrivateDevice, rsaPublicDevice, _ := rsa_generate.Execute()
-		newWallet, code, err := srv.SrvWallet.CreateWallet(uuid.New().String(), mnemonic.Generate(), rsaPublic, rsaPrivate,
-			rsaPublicDevice, rsaPrivateDevice, realIP, request.IdentityNumber, 1)
-		if err != nil {
-			logger.Error.Printf("couldn't create wallet: %v", err)
-			res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-			return res, err
-		}
-
-		walletID = newWallet.ID
-
-		_, code, err = srv.SrvAccounting.CreateAccounting(uuid.New().String(), newWallet.ID, 0, userID)
-		if err != nil {
-			logger.Error.Printf("couldn't create account to wallet: %v", err)
-			res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-			return res, err
-		}
-
-	}
-
-	_, code, err = srv.SrvUsersWallet.CreateUsersWallet(uuid.New().String(), userID, walletID, false)
-	if err != nil {
-		logger.Error.Printf("couldn't create users wallet: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	res.Data = "user verified"
-	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
-	res.Error = false
-	return res, nil
-}
-
-func (h *HandlerUsers) ValidateCertifier(ctx context.Context, request *users_proto.ValidateCertifierRequest) (*users_proto.ValidateResponse, error) {
-	res := &users_proto.ValidateResponse{Error: true}
-
-	// TODO implements GetUserFromToken.
-	//u := helpers.GetUserContext(c)
-	userID := ""
-	realIP := ""
-
-	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
-	user, code, err := srv.SrvUser.GetUsersByID(userID)
-	if err != nil {
-		logger.Error.Printf("couldn't get user by id: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	if user == nil {
-		logger.Error.Printf("couldn't get user by id: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	userWallet, code, err := srv.SrvUsersWallet.GetUserWalletByUserIDAndIdentityNumber(userID, request.IdentityNumber)
-	if err != nil {
-		logger.Error.Printf("couldn't get user wallet by user id and identity number: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	if userWallet != nil {
-		res.Data = "the certifier has already been verified"
-		res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
-		res.Error = false
-		return res, err
-	}
-
-	_, code, err = srv.SrvUser.UpdateUsers(user.ID, user.Nickname, user.Email, user.Password, user.Name, user.Lastname, user.IdType, request.IdentityNumber, user.Cellphone, user.BirthDate, user.VerifiedCode, user.VerifiedAt, user.FullPathPhoto, user.RsaPrivate, user.RsaPublic, 22)
-
-	if err != nil {
-		logger.Error.Printf("couldn't update user by id: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	wallet, code, err := srv.SrvWallet.GetWalletByIdentityNumber(request.IdentityNumber)
-	if err != nil {
-		logger.Error.Printf("couldn't get wallet by identity number: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	walletID := wallet.ID
-
-	if wallet == nil {
-		rsaPrivate, rsaPublic, _ := rsa_generate.Execute()
-		rsaPrivateDevice, rsaPublicDevice, _ := rsa_generate.Execute()
-		newWallet, code, err := srv.SrvWallet.CreateWallet(uuid.New().String(), mnemonic.Generate(), rsaPublic, rsaPrivate,
-			rsaPublicDevice, rsaPrivateDevice, realIP, request.IdentityNumber, 1)
-		if err != nil {
-			logger.Error.Printf("couldn't create wallet: %v", err)
-			res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-			return res, err
-		}
-
-		walletID = newWallet.ID
-
-		_, code, err = srv.SrvAccounting.CreateAccounting(uuid.New().String(), newWallet.ID, 0, userID)
-		if err != nil {
-			logger.Error.Printf("couldn't create account to wallet: %v", err)
-			res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-			return res, err
-		}
-
-	}
-
-	_, code, err = srv.SrvUsersWallet.CreateUsersWallet(uuid.New().String(), userID, walletID, false)
-	if err != nil {
-		logger.Error.Printf("couldn't create users wallet: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
-		return res, err
-	}
-
-	res.Data = "certifier verified"
-	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
-	res.Error = false
-	return res, nil
 }
 
 func (h *HandlerUsers) ValidIdentityNumber(ctx context.Context, request *users_proto.RequestGetByIdentityNumber) (*users_proto.ResponseGetByIdentityNumber, error) {
@@ -623,24 +437,18 @@ func (h *HandlerUsers) ChangePassword(ctx context.Context, request *users_proto.
 
 func (h *HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_proto.RequestCreateUserBySystem) (*users_proto.ResponseCreateUserBySystem, error) {
 	res := &users_proto.ResponseCreateUserBySystem{Error: true}
-	rsaPrivate, rsaPublic, err := rsa_generate.Execute()
-	if err != nil {
-		logger.Error.Printf("couldn't generate rsa user in ActivateUser: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
-		return res, err
-	}
 
 	layout := "2006-01-02T15:04:05.000Z"
 	var birthDate time.Time
-	birthDate, err = time.Parse(layout, request.BirthDate)
+	birthDate, err := time.Parse(layout, request.BirthDate)
 	if err != nil {
 		birthDate = time.Now()
 	}
 
+	verifiedAt := time.Now()
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 	usr, code, err := srvAuth.SrvUser.CreateUsers(uuid.New().String(), request.Nickname, request.Email, password.Encrypt(request.Password),
-		request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone, birthDate,
-		"", time.Now(), "", rsaPrivate, rsaPublic, 21)
+		request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone, birthDate, "", &verifiedAt, "", 21)
 	if err != nil {
 		logger.Error.Printf("don't create user: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -648,20 +456,18 @@ func (h *HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_pr
 	}
 
 	res.Data = &users_proto.User{
-		Id:         usr.ID,
-		Nickname:   usr.Nickname,
-		Email:      usr.Email,
-		Name:       usr.Name,
-		Lastname:   usr.Lastname,
-		IdType:     int32(usr.IdType),
-		IdNumber:   usr.IdNumber,
-		Cellphone:  usr.Cellphone,
-		StatusId:   int32(usr.StatusId),
-		LastLogin:  usr.LastLogin.String(),
-		BirthDate:  usr.BirthDate.String(),
-		IdRole:     int32(usr.IdRole),
-		RsaPrivate: usr.RsaPrivate,
-		RsaPublic:  usr.RsaPublic,
+		Id:        usr.ID,
+		Nickname:  usr.Nickname,
+		Email:     usr.Email,
+		Name:      usr.Name,
+		Lastname:  usr.Lastname,
+		IdType:    int32(usr.IdType),
+		IdNumber:  usr.IdNumber,
+		Cellphone: usr.Cellphone,
+		StatusId:  int32(usr.StatusId),
+		LastLogin: usr.LastLogin.String(),
+		BirthDate: usr.BirthDate.String(),
+		IdRole:    int32(usr.IdRole),
 	}
 	res.Error = false
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
@@ -733,18 +539,16 @@ func (h *HandlerUsers) GetUserByIdentityNumber(ctx context.Context, request *use
 	}
 
 	user := &users_proto.User{
-		Id:         usr.ID,
-		Nickname:   usr.Nickname,
-		Email:      usr.Email,
-		Name:       usr.Name,
-		Lastname:   usr.Lastname,
-		IdType:     int32(usr.IdType),
-		IdNumber:   usr.IdNumber,
-		Cellphone:  usr.Cellphone,
-		StatusId:   int32(usr.StatusId),
-		IdRole:     int32(usr.IdRole),
-		RsaPrivate: usr.RsaPrivate,
-		RsaPublic:  usr.RsaPublic,
+		Id:        usr.ID,
+		Nickname:  usr.Nickname,
+		Email:     usr.Email,
+		Name:      usr.Name,
+		Lastname:  usr.Lastname,
+		IdType:    int32(usr.IdType),
+		IdNumber:  usr.IdNumber,
+		Cellphone: usr.Cellphone,
+		StatusId:  int32(usr.StatusId),
+		IdRole:    int32(usr.IdRole),
 	}
 
 	res.Data = user
@@ -768,7 +572,7 @@ func (h *HandlerUsers) UpdateUser(ctx context.Context, request *users_proto.RqUp
 		verifiedAt = time.Now()
 	}
 
-	user, code, err := srvAuth.SrvUser.UpdateUsers(request.Id, request.Nickname, request.Email, request.Password, request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone, birthDate, request.VerifiedCode, verifiedAt, request.FullPathPhoto, request.RsaPrivate, request.RsaPublic, int(request.IdRole))
+	user, code, err := srvAuth.SrvUser.UpdateUsers(request.Id, request.Nickname, request.Email, request.Password, request.Name, request.Lastname, int(request.IdType), request.IdNumber, request.Cellphone, birthDate, request.VerifiedCode, &verifiedAt, request.FullPathPhoto, int(request.IdRole))
 	if err != nil {
 		logger.Error.Printf("couldn't update user: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -789,7 +593,6 @@ func (h *HandlerUsers) UpdateUser(ctx context.Context, request *users_proto.RqUp
 		IdUser:        user.IdUser,
 		IdRole:        int32(user.IdRole),
 		FullPathPhoto: user.FullPathPhoto,
-		RsaPublic:     user.RsaPublic,
 		RealIp:        user.RealIP,
 	}
 	res.Code, res.Type, res.Msg = msg.GetByCode(29, h.DB, h.TxID)
@@ -880,7 +683,7 @@ func (h *HandlerUsers) UpdateUserIdentity(ctx context.Context, request *users_pr
 	res := &users_proto.ResUpdateUser{Error: true}
 
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
-	user, code, err := srvAuth.SrvUser.UpdateUserIdentity(request.Name, request.Lastname, request.IdentityNumber, int(request.IdRole))
+	user, code, err := srvAuth.SrvUser.UpdateUserIdentity(request.Id, request.Name, request.Lastname, request.IdentityNumber, int(request.IdRole))
 	if err != nil {
 		logger.Error.Printf("couldn't update user: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)

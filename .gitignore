@@ -5,7 +5,7 @@
 *.dll
 *.so
 *.dylib
-blockchain-api
+blion-auth
 
 # Test binary, build with `go test -c`
 *.test

@@ -9,8 +9,8 @@ import (
 )
 
 type PortsServerFrozenMoney interface {
-	CreateFrozenMoney(id string, walletId string, amount int64, lotteryId string) (*FrozenMoney, int, error)
-	UpdateFrozenMoney(id string, walletId string, amount int64, lotteryId string) (*FrozenMoney, int, error)
+	CreateFrozenMoney(id string, walletId string, amount float64, lotteryId string) (*FrozenMoney, int, error)
+	UpdateFrozenMoney(id string, walletId string, amount float64, lotteryId string) (*FrozenMoney, int, error)
 	DeleteFrozenMoney(id string) (int, error)
 	GetFrozenMoneyByID(id string) (*FrozenMoney, int, error)
 	GetAllFrozenMoney() ([]*FrozenMoney, error)
@@ -28,7 +28,7 @@ func NewFrozenMoneyService(repository ServicesFrozenMoneyRepository, user *model
 	return &service{repository: repository, user: user, txID: TxID}
 }
 
-func (s *service) CreateFrozenMoney(id string, walletId string, amount int64, lotteryId string) (*FrozenMoney, int, error) {
+func (s *service) CreateFrozenMoney(id string, walletId string, amount float64, lotteryId string) (*FrozenMoney, int, error) {
 	m := NewFrozenMoney(id, walletId, amount, lotteryId)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
@@ -45,7 +45,7 @@ func (s *service) CreateFrozenMoney(id string, walletId string, amount int64, lo
 	return m, 29, nil
 }
 
-func (s *service) UpdateFrozenMoney(id string, walletId string, amount int64, lotteryId string) (*FrozenMoney, int, error) {
+func (s *service) UpdateFrozenMoney(id string, walletId string, amount float64, lotteryId string) (*FrozenMoney, int, error) {
 	m := NewFrozenMoney(id, walletId, amount, lotteryId)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)

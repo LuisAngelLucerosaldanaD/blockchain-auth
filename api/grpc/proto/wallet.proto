@@ -20,6 +20,12 @@ message ResponseCreateWallet {
 message DataWallet {
   string id = 1;
   string mnemonic = 2;
+  KeyPair key = 3;
+}
+
+message KeyPair {
+  string public = 1;
+  string private = 2;
 }
 
 message RequestActivateWallet {
@@ -29,24 +35,27 @@ message RequestActivateWallet {
 
 message ResponseActivateWallet {
   bool error = 1;
-  Wallet data = 2;
+  WalletActive data = 2;
   int32 code = 3;
   int32 type = 4;
   string msg = 5;
 }
 
+message WalletActive {
+  string id = 1;
+  string mnemonic = 2;
+  KeyPair key = 3;
+}
+
 message Wallet {
   string id = 1;
   string mnemonic = 2;
-  string rsa_public = 3;
-  string rsa_private = 4;
-  string rsa_public_device = 5;
-  string rsa_private_device = 6;
-  string ip_device = 7;
-  int32  status_id = 8;
-  string identity_number = 9;
-  string created_at = 10;
-  string updated_at = 11;
+  string public = 3;
+  string ip_device = 4;
+  int32  status_id = 5;
+  string identity_number = 6;
+  string created_at = 7;
+  string updated_at = 8;
 }
 
 message RequestGetWalletById {
@@ -67,7 +76,7 @@ message RequestGetWalletByUserId {
 
 message ResponseGetWalletByUserId {
   bool error = 1;
-  repeated Wallet data = 2;
+  Wallet data = 2;
   int32 code = 3;
   int32 type = 4;
   string msg = 5;
@@ -99,18 +108,14 @@ message ResponseCreateWalletBySystem {
 
 message RqUpdateWallet {
   string id = 1;
-  string rsa_public = 2;
-  string rsa_private = 3;
-  string rsa_public_device = 4;
-  string rsa_private_device = 5;
-  string ip_device = 6;
-  string identity_number = 7;
-  int32 status_id = 8;
+  string ip_device = 2;
+  string identity_number = 3;
+  int32 status_id = 4;
 }
 
 message ResUpdateWallet {
   bool error = 1;
-  DataWallet data = 2;
+  Wallet data = 2;
   int32 code = 3;
   int32 type = 4;
   string msg = 5;
@@ -118,7 +123,7 @@ message ResUpdateWallet {
 
 message RqFrozenMoney {
   string wallet_id = 1;
-  int64 amount = 2;
+  double amount = 2;
   string lottery_id = 3;
 }
 
@@ -150,7 +155,7 @@ message RqGetFrozenMoney {
 
 message resGetFrozenMoney {
   bool error = 1;
-  int64 data = 2;
+  double data = 2;
   int32 code = 3;
   int32 type = 4;
   string msg = 5;

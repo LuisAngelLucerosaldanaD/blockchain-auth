@@ -31,6 +31,10 @@ INSERT INTO cfg.dictionaries (id,name,value,description,created_at,updated_at) V
 (26,'process-status','fin de las inscripciones e inicio del sorteo','Fin de las inscripciones e inicio del sorteo','2022-07-16 12:06:27.145615','2022-07-16 12:06:27.145615'),
 (27,'process-status','fin del sorteo e inicio del minado','Fin del sorteo e inicio del minado','2022-07-16 12:07:35.60955','2022-07-16 12:07:35.60955'),
 (28,'process-status','fin del minado y del proceso','Fin del minado y del proceso','2022-07-16 12:12:23.693705','2022-07-16 12:12:23.693705');
+(29,'status-hash','registrado','Registrado','2022-07-16 12:12:23.693705','2022-07-16 12:12:23.693705');
+(30,'status-hash','rechazado','Rechazado','2022-07-16 12:12:23.693705','2022-07-16 12:12:23.693705');
+(31,'status-hash','aceptado','Aceptado','2022-07-16 12:12:23.693705','2022-07-16 12:12:23.693705');
+(32,'status-hash','Proceso finalizado por fraude','Proceso finalizado por fraude','2022-07-16 12:12:23.693705','2022-07-16 12:12:23.693705');
 
 INSERT INTO cfg.categories (id,"name",icon,color,created_at,updated_at) VALUES
 ('2e59a864-b7ff-45d9-be8c-7d1b9513f7c5','Información Financiera','financial_info','#A9F375','2022-05-12 08:47:35.604984','2022-05-12 08:47:35.604984'),

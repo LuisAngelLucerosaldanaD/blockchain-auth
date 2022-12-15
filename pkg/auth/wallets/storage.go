@@ -17,7 +17,7 @@ type ServicesWalletRepository interface {
 	delete(id string) error
 	getByID(id string) (*Wallet, error)
 	getAll() ([]*Wallet, error)
-	getWalletByUserId(userID string) ([]*Wallet, error)
+	getWalletByUserId(userID string) (*Wallet, error)
 	getWalletByIdentityNumber(identityNumber string) (*Wallet, error)
 }
 

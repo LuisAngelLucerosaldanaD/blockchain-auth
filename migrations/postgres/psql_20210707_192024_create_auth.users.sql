@@ -23,7 +23,6 @@ CREATE TABLE auth.users
     id_user              uuid          NOT NULL,
     id_role              int4 NULL,
     full_path_photo      varchar(250)  NOT NULL,
-    rsa_private          varchar(3500) NOT NULL,
     rsa_public           varchar(3500) NOT NULL,
     recovery_account_at  timestamp NULL,
     deleted_at           timestamp     NULL,
