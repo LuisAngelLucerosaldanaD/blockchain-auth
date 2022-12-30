@@ -14,7 +14,7 @@ type UserTemp struct {
 	Password     string    `json:"password" db:"password" valid:"required"`
 	Name         string    `json:"name" db:"name" valid:"-"`
 	Lastname     string    `json:"lastname" db:"lastname" valid:"-"`
-	IdType       int       `json:"id_type" db:"id_type" valid:"required"`
+	IdType       int       `json:"id_type" db:"id_type" valid:"-"`
 	IdNumber     string    `json:"id_number" db:"id_number" valid:"-"`
 	Cellphone    string    `json:"cellphone" db:"cellphone" valid:"required"`
 	BirthDate    time.Time `json:"birth_date" db:"birth_date" valid:"required"`
