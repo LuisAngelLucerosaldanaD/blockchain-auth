@@ -266,6 +266,11 @@ func (h *HandlerUsers) GetUserById(ctx context.Context, request *users_proto.Get
 		return res, err
 	}
 
+	if usr == nil {
+		res.Code, res.Type, res.Msg = msg.GetByCode(10008, h.DB, h.TxID)
+		return res, err
+	}
+
 	user := &users_proto.User{
 		Id:            usr.ID,
 		Nickname:      usr.Nickname,

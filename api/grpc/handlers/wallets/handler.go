@@ -35,12 +35,24 @@ func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.
 	u, err := helpers.GetUserContext(ctx)
 	if err != nil {
 		logger.Error.Printf("couldn't get token user, error: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
 		return res, err
 	}
 
 	srv := auth.NewServerAuth(h.DB, u, h.TxID)
 	id := uuid.New().String()
+
+	crtWallet, code, err := srv.SrvWallet.GetWalletByUserID(u.ID)
+	if err != nil {
+		logger.Error.Printf("No se pudo obtener la wallet por id, error: %v", err)
+		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
+		return res, err
+	}
+
+	if crtWallet != nil {
+		res.Code, res.Type, res.Msg = msg.GetByCode(10009, h.DB, h.TxID)
+		return res, err
+	}
 
 	mnemonicStr := mnemonic.Generate()
 	w, code, err := srv.SrvWalletTemp.CreateWalletTemp(id, mnemonicStr, u.ID)
