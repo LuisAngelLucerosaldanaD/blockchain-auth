@@ -465,7 +465,6 @@ func (h *HandlerUsers) CreateUserBySystem(ctx context.Context, request *users_pr
 		IdNumber:  usr.IdNumber,
 		Cellphone: usr.Cellphone,
 		StatusId:  int32(usr.StatusId),
-		LastLogin: usr.LastLogin.String(),
 		BirthDate: usr.BirthDate.String(),
 		IdRole:    int32(usr.IdRole),
 	}
