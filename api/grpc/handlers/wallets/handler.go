@@ -255,6 +255,12 @@ func (h *HandlerWallet) GetWalletByUserId(ctx context.Context, request *wallet_p
 		return res, err
 	}
 
+	if wt == nil {
+		res.Error = false
+		res.Code, res.Type, res.Msg = msg.GetByCode(10007, h.DB, h.TxID)
+		return res, err
+	}
+
 	wallet := wallet_proto.Wallet{
 		Id:             wt.ID,
 		Mnemonic:       wt.Mnemonic,

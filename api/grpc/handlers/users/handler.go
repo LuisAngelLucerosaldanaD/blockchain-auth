@@ -45,17 +45,19 @@ func (h *HandlerUsers) CreateUser(ctx context.Context, request *users_proto.User
 
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	usrI, code, err := srvAuth.SrvUser.GetUserByIdentityNumber(request.IdNumber)
-	if err != nil {
-		logger.Error.Printf("couldn't get user by identity number: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
-		return res, err
-	}
+	if request.IdNumber != "" {
+		usrI, _, err := srvAuth.SrvUser.GetUserByIdentityNumber(request.IdNumber)
+		if err != nil {
+			logger.Error.Printf("couldn't get user by identity number: %v", err)
+			res.Code, res.Type, res.Msg = msg.GetByCode(1, h.DB, h.TxID)
+			return res, err
+		}
 
-	if usrI != nil {
-		logger.Error.Printf("Ya exisite un usuario con el numero de identificación ingresado: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
-		return res, fmt.Errorf("ya exisite un usuario con el numero de identificación ingresado")
+		if usrI != nil {
+			logger.Error.Printf("Ya exisite un usuario con el numero de identificación ingresado")
+			res.Code, res.Type, res.Msg = 22, 22, "Ya exisite un usuario con el numero de identificación ingresado"
+			return res, nil
+		}
 	}
 
 	id := uuid.New().String()
@@ -71,7 +73,7 @@ func (h *HandlerUsers) CreateUser(ctx context.Context, request *users_proto.User
 
 	layout := "2006-01-02T15:04:05.000Z"
 	var birthDate time.Time
-	birthDate, err = time.Parse(layout, request.BirthDate)
+	birthDate, err := time.Parse(layout, request.BirthDate)
 	if err != nil {
 		birthDate = time.Now()
 	}

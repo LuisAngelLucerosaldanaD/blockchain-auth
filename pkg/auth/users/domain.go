@@ -16,7 +16,7 @@ type User struct {
 	Lastname           string     `json:"lastname" db:"lastname" valid:"-"`
 	IdType             int        `json:"id_type" db:"id_type" valid:"-"`
 	IdNumber           string     `json:"id_number" db:"id_number" valid:"-"`
-	Cellphone          string     `json:"cellphone" db:"cellphone" valid:"required"`
+	Cellphone          string     `json:"cellphone" db:"cellphone" valid:"-"`
 	StatusId           int        `json:"status_id" db:"status_id" valid:"required"`
 	FailedAttempts     int        `json:"failed_attempts,omitempty" db:"failed_attempts"`
 	BlockDate          *time.Time `json:"block_date,omitempty" db:"block_date"`
