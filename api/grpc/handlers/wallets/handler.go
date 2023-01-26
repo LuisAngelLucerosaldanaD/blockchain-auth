@@ -289,6 +289,12 @@ func (h *HandlerWallet) GetWalletByIdentityNumber(ctx context.Context, request *
 		return res, err
 	}
 
+	if wt == nil {
+		res.Error = false
+		res.Code, res.Type, res.Msg = msg.GetByCode(10007, h.DB, h.TxID)
+		return res, err
+	}
+
 	wallet := wallet_proto.Wallet{
 		Id:             wt.ID,
 		Mnemonic:       wt.Mnemonic,
@@ -316,7 +322,10 @@ func (h *HandlerWallet) CreateWalletBySystem(ctx context.Context, request *walle
 		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
 		return res, fmt.Errorf("no se pudo generar las claves ECDSA")
 	}
-	wallet, code, err := srv.SrvWallet.CreateWallet(uuid.New().String(), mnemonic.Generate(), rsaPublic, "127.0.0.1", request.IdentityNumber, 1)
+
+	mnemonicData := mnemonic.Generate()
+
+	wallet, code, err := srv.SrvWallet.CreateWallet(uuid.New().String(), mnemonicData, rsaPublic, "127.0.0.1", request.IdentityNumber, 1)
 	if err != nil {
 		logger.Error.Printf("couldn't create wallet: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -325,7 +334,7 @@ func (h *HandlerWallet) CreateWalletBySystem(ctx context.Context, request *walle
 
 	res.Data = &wallet_proto.DataWallet{
 		Id:       wallet.ID,
-		Mnemonic: wallet.Mnemonic,
+		Mnemonic: mnemonicData,
 		Key: &wallet_proto.KeyPair{
 			Public:  rsaPublic,
 			Private: rsaPrivate,
