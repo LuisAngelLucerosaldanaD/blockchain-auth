@@ -19,6 +19,7 @@ type configuration struct {
 	SendGrid SendGrid `json:"send_grid"`
 	Files    Files    `json:"files"`
 	Portal   Portal   `json:"portal"`
+	Aws      Aws      `json:"aws"`
 }
 
 type App struct {
@@ -73,6 +74,12 @@ type Portal struct {
 	ActivateWallet  string `json:"activate_wallet"`
 	ActivateAccount string `json:"activate_account"`
 	ChangePwd       string `json:"change_pwd"`
+}
+
+type Aws struct {
+	AWSACCESSKEYID     string `json:"AWS_ACCESS_KEY_ID"`
+	AWSSECRETACCESSKEY string `json:"AWS_SECRET_ACCESS_KEY"`
+	AWSDEFAULTREGION   string `json:"AWS_DEFAULT_REGION"`
 }
 
 func NewConfiguration() *configuration {
