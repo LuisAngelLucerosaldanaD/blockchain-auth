@@ -204,6 +204,33 @@ func GetPrivateKeyFormatJWK(privateKey string) (*KeyJWK, error) {
 	return nil, nil
 }
 
+func test() {
+
+	clientPrivKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	serverPrivKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		panic(err)
+		return
+	}
+	clientPublicKey := clientPrivKey.PublicKey
+	curve := elliptic.P256()
+	x, _ := curve.ScalarMult(clientPublicKey.X, clientPublicKey.Y, serverPrivKey.D.Bytes())
+
+	sharedSecret := x.Bytes()
+	fmt.Println(string(sharedSecret))
+
+	clientPublicKeyV2 := serverPrivKey.PublicKey
+	curveV2 := elliptic.P256()
+	xx, _ := curveV2.ScalarMult(clientPublicKeyV2.X, clientPublicKeyV2.Y, clientPrivKey.D.Bytes())
+	sharedSecretV2 := xx.Bytes()
+	fmt.Println(string(sharedSecretV2))
+}
+
 func GetTypeCurve() string {
 	return "P-256"
 }

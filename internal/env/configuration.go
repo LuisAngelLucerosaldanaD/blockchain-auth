@@ -15,10 +15,8 @@ var (
 type configuration struct {
 	App      App      `json:"app"`
 	DB       DB       `json:"db"`
-	Template Template `json:"template"`
 	SendGrid SendGrid `json:"send_grid"`
 	Files    Files    `json:"files"`
-	Portal   Portal   `json:"portal"`
 	Aws      Aws      `json:"aws"`
 }
 
@@ -33,13 +31,6 @@ type App struct {
 	RSAPublicKey      string `json:"rsa_public_key"`
 	LoggerHttp        bool   `json:"logger_http"`
 	Language          string `json:"language"`
-}
-
-type Template struct {
-	EmailCode        string `json:"email_code"`
-	EmailToken       string `json:"email_token"`
-	EmailWalletToken string `json:"email_wallet_token"`
-	ChangePwd        string `json:"change_pwd"`
 }
 
 type DB struct {
@@ -67,13 +58,6 @@ type Files struct {
 		BucketSign string `json:"bucket_sign"`
 		Region     string `json:"region"`
 	} `json:"s3"`
-}
-
-type Portal struct {
-	Url             string `json:"url"`
-	ActivateWallet  string `json:"activate_wallet"`
-	ActivateAccount string `json:"activate_account"`
-	ChangePwd       string `json:"change_pwd"`
 }
 
 type Aws struct {

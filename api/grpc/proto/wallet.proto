@@ -4,19 +4,6 @@ package wallet_proto;
 
 option go_package = "./wallet_proto";
 
-
-message RequestCreateWallet {
-  string user_id = 1;
-}
-
-message ResponseCreateWallet {
-  bool error = 1;
-  DataWallet data = 2;
-  int32 code = 3;
-  int32 type = 4;
-  string msg = 5;
-}
-
 message DataWallet {
   string id = 1;
   string mnemonic = 2;
@@ -26,25 +13,6 @@ message DataWallet {
 message KeyPair {
   string public = 1;
   string private = 2;
-}
-
-message RequestActivateWallet {
-  string id = 1;
-  string mnemonic = 2;
-}
-
-message ResponseActivateWallet {
-  bool error = 1;
-  WalletActive data = 2;
-  int32 code = 3;
-  int32 type = 4;
-  string msg = 5;
-}
-
-message WalletActive {
-  string id = 1;
-  string mnemonic = 2;
-  KeyPair key = 3;
 }
 
 message Wallet {
@@ -70,18 +38,6 @@ message ResponseGetWalletById {
   string msg = 5;
 }
 
-message RequestGetWalletByUserId {
-  string user_id = 1;
-}
-
-message ResponseGetWalletByUserId {
-  bool error = 1;
-  Wallet data = 2;
-  int32 code = 3;
-  int32 type = 4;
-  string msg = 5;
-}
-
 message RqGetByIdentityNumber {
   string identity_number = 1;
 }
@@ -94,11 +50,11 @@ message ResponseGetByIdentityNumber {
   string msg = 5;
 }
 
-message RqCreateWalletBySystem {
+message RequestCreateWallet {
   string identity_number = 1;
 }
 
-message ResponseCreateWalletBySystem {
+message ResponseCreateWallet {
   bool error = 1;
   DataWallet data = 2;
   int32 code = 3;
@@ -162,12 +118,9 @@ message resGetFrozenMoney {
 }
 
 service walletServicesWallet {
-  rpc CreateWallet(RequestCreateWallet) returns (ResponseCreateWallet){}
-  rpc ActivateWallet(RequestActivateWallet) returns (ResponseActivateWallet){}
   rpc GetWalletById(RequestGetWalletById) returns (ResponseGetWalletById){}
-  rpc GetWalletByUserId(RequestGetWalletByUserId) returns (ResponseGetWalletByUserId){}
   rpc GetWalletByIdentityNumber(RqGetByIdentityNumber) returns (ResponseGetByIdentityNumber){}
-  rpc CreateWalletBySystem(RqCreateWalletBySystem) returns (ResponseCreateWalletBySystem){}
+  rpc CreateWallet(RequestCreateWallet) returns (ResponseCreateWallet){}
   rpc UpdateWallet(RqUpdateWallet) returns (ResUpdateWallet){}
   rpc FrozenMoney(RqFrozenMoney) returns (resFrozenMoney){}
   rpc UnFreezeMoney(RqUnFreezeMoney) returns (resUnFreezeMoney){}

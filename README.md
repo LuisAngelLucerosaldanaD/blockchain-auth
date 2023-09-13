@@ -1,5 +1,8 @@
 # BLion Auth
 
+## Instalación de Protoc
+Para instalar protoc dar click en este link [protoc](https://github.com/protocolbuffers/protobuf/releases)
+
 ## <span style="color:yellow">Atención</span>
 
 Para versiones anterioeres a protoc v1.27.1 se ejecuta este comando
