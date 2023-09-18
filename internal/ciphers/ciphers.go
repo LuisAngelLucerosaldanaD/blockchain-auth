@@ -2,6 +2,7 @@ package ciphers
 
 import (
 	"blion-auth/internal/logger"
+	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -14,6 +15,7 @@ import (
 	"fmt"
 	openssl "github.com/Luzifer/go-openssl/v4"
 	"github.com/lestrrat-go/jwx/v2/jwk"
+	"golang.org/x/crypto/curve25519"
 )
 
 var secretKey string
@@ -101,6 +103,65 @@ func RsaPrivateStringToRsaPrivate(public string) *rsa.PrivateKey {
 	}
 
 	return privateRsaPem
+}
+
+func GenerateKeyPairEcdsaX25519() (string, string, error) {
+	newPrivateKey, err := ecdh.X25519().GenerateKey(rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+
+	pemPrivateKey, err := EncodePrivateX25519(newPrivateKey)
+	if err != nil {
+		return "", "", err
+	}
+
+	pemPublicKey, err := EncodePublicX25519(newPrivateKey.PublicKey())
+	if err != nil {
+		return "", "", err
+	}
+
+	return pemPrivateKey, pemPublicKey, nil
+}
+
+func EncodePrivateX25519(privateKey *ecdh.PrivateKey) (string, error) {
+	encoded, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	if err != nil {
+		return "", err
+	}
+	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: encoded})
+	return string(pemEncoded), nil
+}
+
+func EncodePublicX25519(pubKey *ecdh.PublicKey) (string, error) {
+
+	encoded, err := x509.MarshalPKIXPublicKey(pubKey)
+
+	if err != nil {
+		return "", err
+	}
+	pemEncodedPub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: encoded})
+
+	return string(pemEncodedPub), nil
+}
+
+func DecodePrivateX25519(pemEncodedPrivate string) (*ecdh.PrivateKey, error) {
+	blockPrivate, _ := pem.Decode([]byte(pemEncodedPrivate))
+	x509EncodedPrivate := blockPrivate.Bytes
+	privateDecode, err := x509.ParsePKCS8PrivateKey(x509EncodedPrivate)
+	if err != nil {
+		return nil, err
+	}
+	private := privateDecode.(*ecdh.PrivateKey)
+	return private, err
+}
+
+func DecodePublicX25519(pemEncodedPub string) (*ecdh.PublicKey, error) {
+	blockPub, _ := pem.Decode([]byte(pemEncodedPub))
+	x509EncodedPub := blockPub.Bytes
+	genericPublicKey, err := x509.ParsePKIXPublicKey(x509EncodedPub)
+	publicKey := genericPublicKey.(*ecdh.PublicKey)
+	return publicKey, err
 }
 
 func GenerateKeyPairEcdsa() (string, string, error) {
@@ -204,33 +265,11 @@ func GetPrivateKeyFormatJWK(privateKey string) (*KeyJWK, error) {
 	return nil, nil
 }
 
-func test() {
-
-	clientPrivKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+func DiffieHellmanX25519(privateKey *ecdh.PrivateKey, publicOtterKey []byte) ([]byte, error) {
+	keySum, err := curve25519.X25519(privateKey.Bytes(), publicOtterKey)
 	if err != nil {
-		panic(err)
-		return
+		return nil, err
 	}
 
-	serverPrivKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		panic(err)
-		return
-	}
-	clientPublicKey := clientPrivKey.PublicKey
-	curve := elliptic.P256()
-	x, _ := curve.ScalarMult(clientPublicKey.X, clientPublicKey.Y, serverPrivKey.D.Bytes())
-
-	sharedSecret := x.Bytes()
-	fmt.Println(string(sharedSecret))
-
-	clientPublicKeyV2 := serverPrivKey.PublicKey
-	curveV2 := elliptic.P256()
-	xx, _ := curveV2.ScalarMult(clientPublicKeyV2.X, clientPublicKeyV2.Y, clientPrivKey.D.Bytes())
-	sharedSecretV2 := xx.Bytes()
-	fmt.Println(string(sharedSecretV2))
-}
-
-func GetTypeCurve() string {
-	return "P-256"
+	return keySum, nil
 }

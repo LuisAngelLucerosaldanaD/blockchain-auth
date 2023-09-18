@@ -97,7 +97,7 @@ func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.
 	res := &wallet_proto.ResponseCreateWallet{Error: true}
 	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	rsaPrivate, rsaPublic, err := ciphers.GenerateKeyPairEcdsa()
+	rsaPrivate, rsaPublic, err := ciphers.GenerateKeyPairEcdsaX25519()
 	if err != nil {
 		logger.Error.Printf("No se pudo generar las claves ECDSA: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
@@ -106,6 +106,7 @@ func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.
 
 	mnemonicData := mnemonic.Generate()
 
+	// TODO validar el envio de ip
 	wallet, code, err := srv.SrvWallet.CreateWallet(uuid.New().String(), mnemonicData, rsaPublic, "127.0.0.1", request.IdentityNumber, 1)
 	if err != nil {
 		logger.Error.Printf("couldn't create wallet: %v", err)
