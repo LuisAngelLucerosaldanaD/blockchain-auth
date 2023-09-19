@@ -2,12 +2,8 @@ package grpc
 
 import (
 	"blion-auth/api/grpc/handlers/accounting"
-	"blion-auth/api/grpc/handlers/login"
-	"blion-auth/api/grpc/handlers/users"
 	"blion-auth/api/grpc/handlers/wallets"
 	"blion-auth/internal/grpc/accounting_proto"
-	"blion-auth/internal/grpc/auth_proto"
-	"blion-auth/internal/grpc/users_proto"
 	"blion-auth/internal/grpc/wallet_proto"
 	"blion-auth/pkg/auth/interceptor"
 	"fmt"
@@ -57,8 +53,6 @@ func (srv *server) Start() {
 
 	s := grpc.NewServer(serverOptions...)
 
-	auth_proto.RegisterAuthServicesUsersServer(s, &login.HandlerLogin{DB: srv.DB, TxID: srv.TxID})
-	users_proto.RegisterAuthServicesUsersServer(s, &users.HandlerUsers{DB: srv.DB, TxID: srv.TxID})
 	wallet_proto.RegisterWalletServicesWalletServer(s, &wallets.HandlerWallet{DB: srv.DB, TxID: srv.TxID})
 	accounting_proto.RegisterAccountingServicesAccountingServer(s, &accounting.HandlerAccounting{DB: srv.DB, TxID: srv.TxID})
 

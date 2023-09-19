@@ -1,7 +1,6 @@
 package ciphers
 
 import (
-	"blion-auth/internal/logger"
 	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -10,70 +9,10 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	openssl "github.com/Luzifer/go-openssl/v4"
-	"github.com/lestrrat-go/jwx/v2/jwk"
-	"golang.org/x/crypto/curve25519"
+	"github.com/Luzifer/go-openssl/v4"
 )
-
-var secretKey string
-
-func init() {
-	//TODO get SecretKey
-	secretKey = "204812730425442A472D2F423F452847"
-}
-
-func Encrypt(strToEncrypt string) string {
-
-	o := openssl.New()
-
-	enc, err := o.EncryptBytes(secretKey, []byte(strToEncrypt), openssl.BytesToKeyMD5)
-	if err != nil {
-		fmt.Printf("An error occurred: %s\n", err)
-		return ""
-	}
-
-	return string(enc)
-}
-
-func Decrypt(strToDecrypt string) string {
-	o := openssl.New()
-	dec, err := o.DecryptBytes(secretKey, []byte(strToDecrypt), openssl.BytesToKeyMD5)
-	if err != nil {
-		fmt.Printf("An error occurred: %s\n", err)
-		return err.Error()
-	}
-	return string(dec)
-}
-
-func GetSecret() string {
-	return secretKey
-}
-
-func EncryptRSAOAEP(secretMessage string, publicKey rsa.PublicKey) string {
-	label := []byte(secretKey)
-	rng := rand.Reader
-	ciphertext, err := rsa.EncryptOAEP(sha256.New(), rng, &publicKey, []byte(secretMessage), label)
-	if err != nil {
-		logger.Error.Printf("No se pudo cifrar el mensaje: error: " + err.Error())
-		return ""
-	}
-	return base64.StdEncoding.EncodeToString(ciphertext)
-}
-
-func DecryptRSAOAEP(cipherText string, privateKey rsa.PrivateKey) string {
-	ct, _ := base64.StdEncoding.DecodeString(cipherText)
-	label := []byte(secretKey)
-	rng := rand.Reader
-	plaintext, err := rsa.DecryptOAEP(sha256.New(), rng, &privateKey, ct, label)
-	if err != nil {
-		logger.Error.Printf("No se pudo decifrar el mensaje: error: " + err.Error())
-		return ""
-	}
-	return string(plaintext)
-}
 
 func RsaPublicStringToRsaPublic(public string) *rsa.PublicKey {
 	blockRsa, _ := pem.Decode([]byte(public))
@@ -239,37 +178,17 @@ func StringToHashSha256(value string) string {
 	return fmt.Sprintf("%x", hash)
 }
 
-func GetPrivateKeyFormatJWK(privateKey string) (*KeyJWK, error) {
-	privateKeyEcdsa, err := DecodePrivate(privateKey)
+func CipherDH(private ecdsa.PrivateKey, publicOtterKey ecdsa.PublicKey) (string, error) {
+	curve := elliptic.P256()
+
+	sharedKeyX, _ := curve.ScalarMult(publicOtterKey.X, publicOtterKey.Y, private.D.Bytes())
+	message := []byte("Este es el contenido del mensaje a firmar")
+	o := openssl.New()
+
+	enc, err := o.EncryptBytes(sharedKeyX.String(), message, openssl.BytesToKeyMD5)
 	if err != nil {
-		return nil, err
-	}
-	key, err := jwk.FromRaw(privateKeyEcdsa)
-	if err != nil {
-		fmt.Printf("failed to create ECDSA key: %s\n", err)
-		return nil, err
-	}
-	if _, ok := key.(jwk.ECDSAPrivateKey); !ok {
-		fmt.Printf("expected jwk.ECDSAPrivateKey, got %T\n", key)
-		return nil, err
+		return "", err
 	}
 
-	key.Set(jwk.KeyIDKey, "mykey")
-
-	buf, err := json.MarshalIndent(key, "", "  ")
-	if err != nil {
-		fmt.Printf("failed to marshal key into JSON: %s\n", err)
-		return nil, err
-	}
-	fmt.Printf("%s\n", buf)
-	return nil, nil
-}
-
-func DiffieHellmanX25519(privateKey *ecdh.PrivateKey, publicOtterKey []byte) ([]byte, error) {
-	keySum, err := curve25519.X25519(privateKey.Bytes(), publicOtterKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return keySum, nil
+	return string(enc), nil
 }

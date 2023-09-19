@@ -3,7 +3,6 @@ package wallets
 import (
 	"blion-auth/internal/ciphers"
 	"blion-auth/internal/grpc/wallet_proto"
-	"blion-auth/internal/helpers"
 	"blion-auth/internal/logger"
 	"blion-auth/internal/mnemonic"
 	"blion-auth/internal/msg"
@@ -48,7 +47,7 @@ func (h *HandlerWallet) GetWalletById(ctx context.Context, request *wallet_proto
 		Public:         wt.RsaPublic,
 		IpDevice:       wt.IpDevice,
 		StatusId:       int32(wt.StatusId),
-		IdentityNumber: wt.IdentityNumber,
+		IdentityNumber: wt.Dni,
 		CreatedAt:      wt.CreatedAt.String(),
 		UpdatedAt:      wt.UpdatedAt.String(),
 	}
@@ -82,7 +81,7 @@ func (h *HandlerWallet) GetWalletByIdentityNumber(ctx context.Context, request *
 		Public:         wt.RsaPublic,
 		IpDevice:       wt.IpDevice,
 		StatusId:       int32(wt.StatusId),
-		IdentityNumber: wt.IdentityNumber,
+		IdentityNumber: wt.Dni,
 		CreatedAt:      wt.CreatedAt.String(),
 		UpdatedAt:      wt.UpdatedAt.String(),
 	}
@@ -97,7 +96,7 @@ func (h *HandlerWallet) CreateWallet(ctx context.Context, request *wallet_proto.
 	res := &wallet_proto.ResponseCreateWallet{Error: true}
 	srv := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	rsaPrivate, rsaPublic, err := ciphers.GenerateKeyPairEcdsaX25519()
+	rsaPrivate, rsaPublic, err := ciphers.GenerateKeyPairEcdsa()
 	if err != nil {
 		logger.Error.Printf("No se pudo generar las claves ECDSA: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(22, h.DB, h.TxID)
@@ -146,7 +145,7 @@ func (h *HandlerWallet) UpdateWallet(ctx context.Context, request *wallet_proto.
 		Public:         wallet.RsaPublic,
 		IpDevice:       wallet.IpDevice,
 		StatusId:       int32(wallet.StatusId),
-		IdentityNumber: wallet.IdentityNumber,
+		IdentityNumber: wallet.Dni,
 		CreatedAt:      wallet.CreatedAt.String(),
 		UpdatedAt:      wallet.UpdatedAt.String(),
 	}
@@ -158,13 +157,6 @@ func (h *HandlerWallet) UpdateWallet(ctx context.Context, request *wallet_proto.
 func (h *HandlerWallet) FrozenMoney(ctx context.Context, request *wallet_proto.RqFrozenMoney) (*wallet_proto.ResFrozenMoney, error) {
 	res := &wallet_proto.ResFrozenMoney{Error: true}
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
-
-	u, err := helpers.GetUserContext(ctx)
-	if err != nil {
-		logger.Error.Printf("couldn't get token user, error: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
-		return res, err
-	}
 
 	_, code, err := srvAuth.SrvFrozenMoney.CreateFrozenMoney(uuid.New().String(), request.WalletId, request.Amount, request.LotteryId)
 	if err != nil {
@@ -180,7 +172,7 @@ func (h *HandlerWallet) FrozenMoney(ctx context.Context, request *wallet_proto.R
 		return res, err
 	}
 
-	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, account.Amount-request.Amount, u.ID)
+	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, account.Amount-request.Amount)
 	if err != nil {
 		logger.Error.Printf("couldn't set account, error: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -195,13 +187,6 @@ func (h *HandlerWallet) FrozenMoney(ctx context.Context, request *wallet_proto.R
 func (h *HandlerWallet) UnFreezeMoney(ctx context.Context, request *wallet_proto.RqUnFreezeMoney) (*wallet_proto.ResUnFreezeMoney, error) {
 	res := &wallet_proto.ResUnFreezeMoney{Error: true}
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
-
-	u, err := helpers.GetUserContext(ctx)
-	if err != nil {
-		logger.Error.Printf("couldn't get token user, error: %v", err)
-		res.Code, res.Type, res.Msg = msg.GetByCode(70, h.DB, h.TxID)
-		return res, err
-	}
 
 	frozenMoney, code, err := srvAuth.SrvFrozenMoney.GetFrozenMoneyByWalletIDAndLotteryId(request.WalletId, request.LotteryId)
 	if err != nil {
@@ -229,7 +214,7 @@ func (h *HandlerWallet) UnFreezeMoney(ctx context.Context, request *wallet_proto
 		amount -= request.Penalty
 	}
 
-	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, amount, u.ID)
+	_, code, err = srvAuth.SrvAccounting.SetAmount(request.WalletId, amount)
 	if err != nil {
 		logger.Error.Printf("couldn't set account, error: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)

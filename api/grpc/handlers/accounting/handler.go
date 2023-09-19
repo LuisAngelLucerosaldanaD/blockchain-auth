@@ -37,7 +37,6 @@ func (h HandlerAccounting) GetAccountingByWalletById(ctx context.Context, reques
 		Id:        account.ID,
 		IdWallet:  account.IdWallet,
 		Amount:    account.Amount,
-		IdUser:    account.IdUser,
 		CreatedAt: account.CreatedAt.String(),
 		UpdatedAt: account.UpdatedAt.String(),
 	}
@@ -50,7 +49,7 @@ func (h HandlerAccounting) CreateAccounting(ctx context.Context, request *accoun
 	res := &accounting_proto.ResponseCreateAccounting{Error: true}
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	wallet, code, err := srvAuth.SrvAccounting.CreateAccounting(request.Id, request.IdWallet, request.Amount, request.IdUser)
+	wallet, code, err := srvAuth.SrvAccounting.CreateAccounting(request.Id, request.IdWallet, request.Amount)
 	if err != nil {
 		logger.Error.Printf("couldn't create accounting: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -62,7 +61,6 @@ func (h HandlerAccounting) CreateAccounting(ctx context.Context, request *accoun
 		Id:        wallet.ID,
 		IdWallet:  wallet.IdWallet,
 		Amount:    wallet.Amount,
-		IdUser:    wallet.IdUser,
 		CreatedAt: wallet.CreatedAt.String(),
 		UpdatedAt: wallet.UpdatedAt.String(),
 	}
@@ -74,7 +72,7 @@ func (h HandlerAccounting) SetAmountToAccounting(ctx context.Context, request *a
 	res := &accounting_proto.ResponseSetAmountToAccounting{Error: true}
 	srvAuth := auth.NewServerAuth(h.DB, nil, h.TxID)
 
-	wallet, code, err := srvAuth.SrvAccounting.SetAmount(request.WalletId, request.Amount, request.IdUser)
+	wallet, code, err := srvAuth.SrvAccounting.SetAmount(request.WalletId, request.Amount)
 	if err != nil {
 		logger.Error.Printf("couldn't set amount to accounting: %v", err)
 		res.Code, res.Type, res.Msg = msg.GetByCode(code, h.DB, h.TxID)
@@ -86,7 +84,6 @@ func (h HandlerAccounting) SetAmountToAccounting(ctx context.Context, request *a
 		Id:        wallet.ID,
 		IdWallet:  wallet.IdWallet,
 		Amount:    wallet.Amount,
-		IdUser:    wallet.IdUser,
 		CreatedAt: wallet.CreatedAt.String(),
 		UpdatedAt: wallet.UpdatedAt.String(),
 	}

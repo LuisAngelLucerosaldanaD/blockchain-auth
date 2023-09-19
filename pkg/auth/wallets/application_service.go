@@ -1,7 +1,7 @@
 package wallets
 
 import (
-	"blion-auth/internal/password"
+	"blion-auth/internal/ciphers"
 	"fmt"
 
 	"blion-auth/internal/logger"
@@ -16,7 +16,6 @@ type PortsServerWallet interface {
 	DeleteWallet(id string) (int, error)
 	GetWalletByID(id string) (*Wallet, int, error)
 	GetAllWallet() ([]*Wallet, error)
-	GetWalletByUserID(userID string) (*Wallet, int, error)
 	GetWalletByIdentityNumber(identityNumber string) (*Wallet, int, error)
 }
 
@@ -36,7 +35,7 @@ func (s *service) CreateWallet(id, mnemonic, rsaPublic, ipDevice, identityNumber
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err
 	}
-	m.Mnemonic = password.Encrypt(mnemonic)
+	m.Mnemonic = ciphers.StringToHashSha256(mnemonic)
 	if err := s.repository.create(m); err != nil {
 		if err.Error() == "ecatch:108" {
 			return m, 108, nil
@@ -91,19 +90,6 @@ func (s *service) GetWalletByID(id string) (*Wallet, int, error) {
 
 func (s *service) GetAllWallet() ([]*Wallet, error) {
 	return s.repository.getAll()
-}
-
-func (s *service) GetWalletByUserID(userID string) (*Wallet, int, error) {
-	if !govalidator.IsUUID(userID) {
-		logger.Error.Println(s.txID, " - don't meet validations:", fmt.Errorf("id isn't uuid"))
-		return nil, 15, fmt.Errorf("id isn't uuid")
-	}
-	m, err := s.repository.getWalletByUserId(userID)
-	if err != nil {
-		logger.Error.Println(s.txID, " - couldn`t getByID row:", err)
-		return nil, 22, err
-	}
-	return m, 29, nil
 }
 
 func (s *service) GetWalletByIdentityNumber(identityNumber string) (*Wallet, int, error) {

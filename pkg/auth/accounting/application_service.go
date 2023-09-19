@@ -10,12 +10,12 @@ import (
 )
 
 type PortsServerAccounting interface {
-	CreateAccounting(id string, idWallet string, amount float64, idUser string) (*Accounting, int, error)
-	UpdateAccounting(id string, idWallet string, amount float64, idUser string) (*Accounting, int, error)
+	CreateAccounting(id string, idWallet string, amount float64) (*Accounting, int, error)
+	UpdateAccounting(id string, idWallet string, amount float64) (*Accounting, int, error)
 	DeleteAccounting(id string) (int, error)
 	GetAccountingByID(id string) (*Accounting, int, error)
 	GetAllAccounting() ([]*Accounting, error)
-	SetAmount(idWallet string, amount float64, idUser string) (*Accounting, int, error)
+	SetAmount(idWallet string, amount float64) (*Accounting, int, error)
 	GetAccountingByWalletID(walletID string) (*Accounting, int, error)
 }
 
@@ -29,8 +29,8 @@ func NewAccountingService(repository ServicesAccountingRepository, user *models.
 	return &service{repository: repository, user: user, txID: TxID}
 }
 
-func (s *service) CreateAccounting(id string, idWallet string, amount float64, idUser string) (*Accounting, int, error) {
-	m := NewAccounting(id, idWallet, amount, idUser)
+func (s *service) CreateAccounting(id string, idWallet string, amount float64) (*Accounting, int, error) {
+	m := NewAccounting(id, idWallet, amount)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err
@@ -49,8 +49,8 @@ func (s *service) CreateAccounting(id string, idWallet string, amount float64, i
 	return m, 29, nil
 }
 
-func (s *service) UpdateAccounting(id string, idWallet string, amount float64, idUser string) (*Accounting, int, error) {
-	m := NewAccounting(id, idWallet, amount, idUser)
+func (s *service) UpdateAccounting(id string, idWallet string, amount float64) (*Accounting, int, error) {
+	m := NewAccounting(id, idWallet, amount)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err
@@ -99,8 +99,8 @@ func (s *service) GetAllAccounting() ([]*Accounting, error) {
 	return s.repository.getAll()
 }
 
-func (s *service) SetAmount(idWallet string, amount float64, idUser string) (*Accounting, int, error) {
-	m := NewAccountingSetAmount(idWallet, amount, idUser)
+func (s *service) SetAmount(idWallet string, amount float64) (*Accounting, int, error) {
+	m := NewAccountingSetAmount(idWallet, amount)
 	if valid, err := m.valid(); !valid {
 		logger.Error.Println(s.txID, " - don't meet validations:", err)
 		return m, 15, err

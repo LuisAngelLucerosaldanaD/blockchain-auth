@@ -30,7 +30,7 @@ func (s *psql) create(m *Accounting) error {
 	date := time.Now()
 	m.UpdatedAt = date
 	m.CreatedAt = date
-	const psqlInsert = `INSERT INTO auth.accounting (id ,id_wallet, amount, id_user, created_at, updated_at) VALUES (:id ,:id_wallet, :amount, :id_user,:created_at, :updated_at) `
+	const psqlInsert = `INSERT INTO auth.accounting (id ,wallet_id, amount, created_at, updated_at) VALUES (:id ,:wallet_id, :amount,:created_at, :updated_at) `
 	rs, err := s.DB.NamedExec(psqlInsert, &m)
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func (s *psql) create(m *Accounting) error {
 func (s *psql) update(m *Accounting) error {
 	date := time.Now()
 	m.UpdatedAt = date
-	const psqlUpdate = `UPDATE auth.accounting SET id_wallet = :id_wallet, amount = :amount, id_user = :id_user, updated_at = :updated_at WHERE id = :id `
+	const psqlUpdate = `UPDATE auth.accounting SET wallet_id = :wallet_id, amount = :amount, updated_at = :updated_at WHERE id = :id `
 	rs, err := s.DB.NamedExec(psqlUpdate, &m)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (s *psql) delete(id string) error {
 
 // GetByID consulta un registro por su ID
 func (s *psql) getByID(id string) (*Accounting, error) {
-	const psqlGetByID = `SELECT id , id_wallet, amount, id_user, created_at, updated_at FROM auth.accounting WHERE id = $1 `
+	const psqlGetByID = `SELECT id , wallet_id, amount, created_at, updated_at FROM auth.accounting WHERE id = $1 `
 	mdl := Accounting{}
 	err := s.DB.Get(&mdl, psqlGetByID, id)
 	if err != nil {
@@ -87,7 +87,7 @@ func (s *psql) getByID(id string) (*Accounting, error) {
 // GetAll consulta todos los registros de la BD
 func (s *psql) getAll() ([]*Accounting, error) {
 	var ms []*Accounting
-	const psqlGetAll = ` SELECT id , id_wallet, amount, id_user, created_at, updated_at FROM auth.accounting `
+	const psqlGetAll = ` SELECT id , wallet_id, amount, created_at, updated_at FROM auth.accounting `
 
 	err := s.DB.Select(&ms, psqlGetAll)
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *psql) getAll() ([]*Accounting, error) {
 func (s *psql) setAmount(m *Accounting) error {
 	date := time.Now()
 	m.UpdatedAt = date
-	const psqlUpdate = `UPDATE auth.accounting SET amount = :amount, id_user = :id_user, updated_at = :updated_at WHERE id_wallet = :id_wallet`
+	const psqlUpdate = `UPDATE auth.accounting SET amount = :amount, updated_at = :updated_at WHERE wallet_id = :wallet_id`
 	rs, err := s.DB.NamedExec(psqlUpdate, &m)
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (s *psql) setAmount(m *Accounting) error {
 }
 
 func (s *psql) getByWalletID(walletID string) (*Accounting, error) {
-	const psqlGetByID = `SELECT id , id_wallet, amount, id_user, created_at, updated_at FROM auth.accounting WHERE id_wallet = $1 `
+	const psqlGetByID = `SELECT id , wallet_id, amount, created_at, updated_at FROM auth.accounting WHERE wallet_id = $1 `
 	mdl := Accounting{}
 	err := s.DB.Get(&mdl, psqlGetByID, walletID)
 	if err != nil {
