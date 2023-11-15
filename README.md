@@ -1,5 +1,20 @@
 # BLion Auth
 
+## Compilación
+
+* para sistemas basados en Linux
+
+````bash
+GOOS=linux  GOARCH=amd64 go build 
+````
+
+* para sistemas basados en Windows
+
+````bash
+GOOS=windows  GOARCH=amd64 go build 
+````
+
+
 ## Instalación de Protoc
 Para instalar protoc dar click en este link [protoc](https://github.com/protocolbuffers/protobuf/releases)
 
